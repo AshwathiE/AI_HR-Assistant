@@ -91,12 +91,12 @@ async def upload_document(file: UploadFile = File(...)):
 
 @router.get("/documents")  ## paginationn processs
 def list_uploaded_documents(
-    page: int = Query(1, ge=1),   # default page = 1
-    page_size: int = Query(10, ge=1, le=100),  # default page size = 10  ##This controls how many documents appear on one page.
+    page: int = Query(1, ge=1),   # default page = 1 page numer is always a int
+    page_size: int = Query(10, ge=1, le=100),  # default page size = 10  ##This controls how many documents appear on one page. le =maximum no of pages
 ):
     files = sorted(
         [
-            file_name
+            file_name                                                       ##It loops through every item in the upload folder.
             for file_name in os.listdir(UPLOAD_FOLDER)
             if os.path.isfile(os.path.join(UPLOAD_FOLDER, file_name))
         ]

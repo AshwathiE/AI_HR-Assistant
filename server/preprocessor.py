@@ -37,8 +37,8 @@ STOP_WORDS = {
 
 
 # Fuzzy matching thresholds
-HIGH_CONFIDENCE_THRESHOLD = 80   #similarity is 80 or above Direct replacement
-MODERATE_CONFIDENCE_THRESHOLD = 65  # Include both original + corrected (query expansion)
+HIGH_CONFIDENCE_THRESHOLD = 90   #similarity is 80 or above Direct replacement
+MODERATE_CONFIDENCE_THRESHOLD = 80  # Include both original + corrected (query expansion)
 MIN_WORD_LENGTH = 3  # Skip very short words to avoid false positives
 
 ABBREVIATIONS = {
@@ -119,7 +119,7 @@ def fuzzy_correct_keywords(keywords):
             if score >= HIGH_CONFIDENCE_THRESHOLD:
 
                 logger.info(
-                    f"✓ Fuzzy correction applied: '{word}' -> '{matched_word}'"
+                    f" Fuzzy correction applied: '{word}' -> '{matched_word}'"
                 )
 
                 corrected_words.append(matched_word)
@@ -127,7 +127,7 @@ def fuzzy_correct_keywords(keywords):
             elif score >= MODERATE_CONFIDENCE_THRESHOLD:
 
                 logger.info(
-                    f"✓ Query expansion applied: '{word}' -> ['{word}', '{matched_word}']"
+                    f" Query expansion applied: '{word}' -> ['{word}', '{matched_word}']"
                 )
 
                 corrected_words.append(word)
@@ -136,7 +136,7 @@ def fuzzy_correct_keywords(keywords):
             else:
 
                 logger.info(
-                    f"✗ No correction applied for '{word}' (score={score:.2f})"
+                    f" No correction applied for '{word}' (score={score:.2f})"
                 )
 
                 corrected_words.append(word)
@@ -144,7 +144,7 @@ def fuzzy_correct_keywords(keywords):
         else:
 
             logger.info(
-                f"✗ No fuzzy match found for '{word}'"
+                f" No fuzzy match found for '{word}'"
             )
 
             corrected_words.append(word)
@@ -178,7 +178,7 @@ def preprocess_query(query):
 
 
     # remove extra spaces
-    query = re.sub(
+    query = re.sub(        ## regular exp substitution
         r'\s+',
         ' ',
         query

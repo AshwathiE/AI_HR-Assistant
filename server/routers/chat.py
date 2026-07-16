@@ -241,19 +241,16 @@ def chat(request: ChatRequest):
     # ---- Preprocessing ----
     t_pre = time.time()
 
-    from llm import rewrite_query
-    rewritten_question = rewrite_query(question)
-    logger.info(f"Original Question: {question} -> LLM Rewritten Query: {rewritten_question}")
-
-    cleaned_query, keywords = preprocess_query(rewritten_question)
+    cleaned_query, keywords = preprocess_query(question)
+    logger.info(f"Original Question: {question} -> Preprocessed Query: {cleaned_query}")
 
     search_text = " ".join(
-    [cleaned_query] + keywords[:8]
-)
+        [cleaned_query] + keywords[:8]
+    )
 
     logger.info(
-    f"Preprocessing Time: {time.time() - t_pre:.3f} sec"
-)    
+        f"Preprocessing Time: {time.time() - t_pre:.3f} sec"
+    )
 
     # ---- Cache Check ----
     cache_key = search_text.lower()
