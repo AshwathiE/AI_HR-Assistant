@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+python-multipart
+pypdf
+python-docx
+sentence-transformers
+langchain
+google-generativeai
+python-dotenv
+google-genai
+qdrant-client
+rapidfuzz
+rank-bm25

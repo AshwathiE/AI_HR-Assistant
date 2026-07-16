@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="AI-powered company policy assistant. Upload HR policy documents and ask questions instantly.">
+    <title>AI Company Policy Assistant</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="/static/style.css">
+
+</head>
+
+<body>
+
+    <div class="bg-glow"></div>
+
+    <div class="container">
+
+        <!-- Header -->
+        <header class="header">
+            <div class="header-icon">🤖</div>
+            <div>
+                <h1>AI Company Policy Assistant</h1>
+                <p class="header-subtitle">Upload HR documents and ask questions instantly</p>
+            </div>
+        </header>
+
+        <div class="grid">
+
+            <!-- Left column -->
+            <div class="column-left">
+
+                <!-- Upload Card -->
+                <div class="card upload-card">
+                    <div class="card-header">
+                        <span class="card-icon">📤</span>
+                        <h2>Upload Policy Document</h2>
+                    </div>
+
+                    <label class="file-drop-zone" id="dropZone">
+                        <input type="file" id="pdfFile" accept=".pdf,.docx" hidden>
+                        <div class="drop-icon">📁</div>
+                        <p class="drop-text">Click to choose a file</p>
+                        <p class="drop-hint">Supports PDF &amp; DOCX</p>
+                        <div id="selectedFileName" class="selected-file-name"></div>
+                    </label>
+
+                    <button id="uploadBtn" class="btn btn-primary" onclick="uploadPDF()">
+                        <span>⬆️</span> Upload Document
+                    </button>
+
+                    <div id="uploadStatus" class="status-msg"></div>
+                </div>
+
+                <!-- Uploaded Documents Card — rendered server-side by Jinja2 -->
+                <div class="card docs-card">
+                    <div class="card-header">
+                        <span class="card-icon">📂</span>
+                        <h2>Uploaded Documents
+                            <span id="docCount" class="count-badge">{{ documents | length }}</span>
+                        </h2>
+                    </div>
+
+                    <ul id="documentList" class="doc-list">
+                        {% if documents %}
+                        {% for doc in documents %}
+                        {% set ext = doc.split('.')[-1].upper() %}
+                        <li class="doc-item">
+                            <span class="doc-icon">{% if ext == 'PDF' %}📕{% else %}📘{% endif %}</span>
+                            <span class="doc-name">{{ doc }}</span>
+                            <span class="doc-badge">{{ ext }}</span>
+                        </li>
+                        {% endfor %}
+                        {% else %}
+                        <li class="empty-item">📭 No documents uploaded yet.</li>
+                        {% endif %}
+                    </ul>
+
+                    <button class="btn btn-secondary" onclick="refreshDocuments()" style="margin-top:12px;">
+                        🔄 Refresh
+                    </button>
+                </div>
+
+            </div>
+
+
+
+            <!-- Right column — Ask a Question -->
+            <div class="column-right">
+                <div class="card chat-card">
+                    <div class="card-header">
+                        <span class="card-icon">💬</span>
+                        <h2>Ask a Question</h2>
+                    </div>
+
+                    <div class="topk-container">
+                        <label for="topK">Top-K Retrieval</label>
+
+                        <select id="topK" class="topk-select">
+                            <option value="1">1 Chunk</option>
+                            <option value="2">2 Chunks</option>
+                            <option value="3" selected>3 Chunks</option>
+                            <option value="4">4 Chunks</option>
+                            <option value="5">5 Chunks</option>
+                            <option value="6">6 Chunks</option>
+                            <option value="7">7 Chunks</option>
+                            <option value="8">8 Chunks</option>
+                            <option value="9">9 Chunks</option>
+                            <option value="10">10 Chunks</option>
+                        </select>
+                    </div>
+
+                    <textarea id="question" class="question-input"
+                        placeholder="Example: Can I carry forward unused leave?&#10;" rows="5"></textarea>
+
+                    <button id="askBtn" class="btn btn-primary" onclick="askQuestion()">
+                        <span>🔍</span> Ask AI
+                    </button>
+
+                    <div id="answer" class="answer-area"></div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="/static/script.js"></script>
+
+    <script>
+        // Show selected filename in the drop zone
+        document.getElementById("pdfFile").addEventListener("change", function () {
+            const nameEl = document.getElementById("selectedFileName");
+            if (this.files.length > 0) {
+                nameEl.textContent = "Selected: " + this.files[0].name;
+                nameEl.style.display = "block";
+            } else {
+                nameEl.style.display = "none";
+            }
+        });
+
+        // Reload page to refresh document list (server-side rendered)
+        function refreshDocuments() {
+            window.location.reload();
+        }
+    </script>
+
+</body>
+
+</html>
