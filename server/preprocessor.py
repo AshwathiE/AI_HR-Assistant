@@ -37,8 +37,8 @@ STOP_WORDS = {
 
 
 # Fuzzy matching thresholds
-HIGH_CONFIDENCE_THRESHOLD = 90   #similarity is 80 or above Direct replacement
-MODERATE_CONFIDENCE_THRESHOLD = 80  # Include both original + corrected (query expansion)
+HIGH_CONFIDENCE_THRESHOLD = 85   #similarity is 80 or above Direct replacement
+MODERATE_CONFIDENCE_THRESHOLD = 70  # Include both original + corrected (query expansion)
 MIN_WORD_LENGTH = 3  # Skip very short words to avoid false positives
 
 ABBREVIATIONS = {

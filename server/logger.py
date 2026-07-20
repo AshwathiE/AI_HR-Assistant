@@ -28,7 +28,6 @@ file_handler.setFormatter(formatter)
 
 console_handler = logging.StreamHandler()
 console_handler.setFormatter(formatter)
-
-
+#level : INFO, DEBUG, WARNING, ERROR, CRITICAL
 logger.addHandler(file_handler)
 logger.addHandler(console_handler)

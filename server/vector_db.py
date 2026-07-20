@@ -213,9 +213,69 @@ def get_all_chunks():
                     "id": str(record.id), ## id is converted as string as stores bcz some can be string some can be UUId
                     "text": payload.get("text", ""),
                     "source": payload.get("source", ""),
-                    "chunk_number": payload.get("chunk_number", 0),
                     "collection_name": collection_name,
                 }
             )
 
     return chunks  ## all chunjs is stored together as one and returned
+
+
+def delete_document_by_filename(source_file: str):
+    """
+    Deletes the Qdrant collection associated with the given source filename.
+    """
+    collection_name = get_collection_name(source_file)
+    collections = client.get_collections().collections
+    existing = [c.name for c in collections]
+    if collection_name in existing:
+        client.delete_collection(collection_name=collection_name)
+        return True
+    return False
+
+
+def get_document_points(source_file: str):
+    """
+    Retrieves all points (including vectors and payloads) for the given source filename.
+    """
+    collection_name = get_collection_name(source_file)
+    collections = client.get_collections().collections
+    existing = [c.name for c in collections]
+    if collection_name not in existing:
+        return None
+    records, _ = client.scroll(
+        collection_name=collection_name,
+        limit=10000,
+        with_payload=True,
+        with_vectors=True,
+    )
+    return records
+
+
+def restore_document_points(source_file: str, records: list):
+    """
+    Restores Qdrant collection and points from a list of record objects.
+    """
+    collection_name = get_collection_name(source_file)
+    collections = client.get_collections().collections
+    existing = [c.name for c in collections]
+    if collection_name in existing:
+        client.delete_collection(collection_name=collection_name)
+    
+    if not records:
+        return
+        
+    ensure_collection(collection_name)
+    points = []
+    for record in records:
+        points.append(
+            PointStruct(
+                id=str(record.id),
+                vector=record.vector,
+                payload=record.payload,
+            )
+        )
+    client.upsert(
+        collection_name=collection_name,
+        points=points,
+    )
+

@@ -3,7 +3,7 @@ uvicorn
 python-multipart
 pypdf
 python-docx
-sentence-transformers
+sentence_transformers
 langchain
 google-generativeai
 python-dotenv
@@ -11,3 +11,4 @@ google-genai
 qdrant-client
 rapidfuzz
 rank-bm25
+groq

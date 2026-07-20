@@ -44,7 +44,7 @@ def rerank_documents(question, results, top_k=5): ## results : documents returen
 
 
     # Keep only required top_k results
-    RERANK_THRESHOLD = 2
+    RERANK_THRESHOLD = 2  ## filteration threshold 
 
     filtered_results = [
         result

@@ -78,7 +78,7 @@ def save_vocabulary(vocabulary):
         )
 
 
-def update_vocabulary(chunks):
+def update_vocabulary(chunks, rebuild=False):
     """
     Update vocabulary from document chunks.
 
@@ -87,9 +87,12 @@ def update_vocabulary(chunks):
     2. List[dict] where each dict contains a 'text' field.
     """
 
-    logger.info(f"Updating vocabulary from {len(chunks)} chunks.")
+    logger.info(f"Updating vocabulary from {len(chunks)} chunks (rebuild={rebuild}).")
 
-    vocabulary = load_vocabulary()
+    if rebuild:
+        vocabulary = set()
+    else:
+        vocabulary = load_vocabulary()
 
     new_words = 0
 

@@ -17,12 +17,15 @@ from vector_db import get_all_documents
 # Project Paths
 # -----------------------------
 
+from pathlib import Path
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 CLIENT_DIR = BASE_DIR / "client"
 STATIC_DIR = CLIENT_DIR / "static"
 TEMPLATE_DIR = CLIENT_DIR / "templates"
-UPLOAD_FOLDER = BASE_DIR / "uploads"
+
+UPLOAD_FOLDER = BASE_DIR / "server" / "uploads"
 
 # -----------------------------
 # FastAPI App

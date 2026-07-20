@@ -21,7 +21,7 @@ def generate_embedding(text: str):
     embedding = model.encode(text) #check the datatype of this ---string to  numpy ndimensional array with floating point numbers
 
     return embedding.tolist() ##converts the numpy ndimensional array to list of 384 floating point numbers
-def generate_embeddings(text_chunks):
+def generate_embeddings(text_chunks): ## generates multiple embeddings 
     """
     Generate embeddings for multiple text chunks.
 

@@ -5,7 +5,7 @@ bm25_index = None
 documents = [] ## stores every chunk along with meta data
 
 
-def build_bm25(chunks):  ## calledwheenver new functions are uploaded
+def build_bm25(chunks):  ## calledwheenver new functions are uploaded 
     """
     Builds/Rebuilds BM25 index using all chunks.
 
@@ -15,8 +15,8 @@ def build_bm25(chunks):  ## calledwheenver new functions are uploaded
                 'chunk_number', 'collection_name', 'id' keys.
     """
 
-    global bm25_index
-    global documents
+    global bm25_index ## function is called globally so that upload is done globally and result is fetched
+    global documents ## both index and documents are called globally
     # Normalize input: accept both plain strings
     # and metadata-enriched dicts
     ##is a built-in Python function used to check whether an object belongs to a particular class (or data type) or any of its subclasses

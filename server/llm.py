@@ -1,3 +1,4 @@
+# llm.py
 import json
 import os
 import re
@@ -5,19 +6,27 @@ import re
 from dotenv import load_dotenv
 from google.api_core.exceptions import ResourceExhausted
 import google.generativeai as genai
+from groq import Groq
+
+from logger import logger
 
 load_dotenv()
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
+# Gemini
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
-    model = genai.GenerativeModel("gemini-2.5-flash")
+    gemini_model = genai.GenerativeModel("gemini-2.5-flash")
 else:
-    model = None
+    gemini_model = None
+
+# Groq
+groq_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 
 
-def _parse_model_output(output: str) -> dict:  ## converts gemini response into a python dictionary
+def _parse_model_output(output: str) -> dict:
     cleaned = output.strip()
 
     if cleaned.startswith("```"):
@@ -26,42 +35,43 @@ def _parse_model_output(output: str) -> dict:  ## converts gemini response into 
 
     try:
         payload = json.loads(cleaned)
-
         if isinstance(payload, dict):
             return {
-                "answer": payload.get("answer")
-                or payload.get("response")
-                or "I couldn't find this information in the uploaded company policies.",
-
+                "answer": payload.get("answer") or payload.get("response") or
+                "I couldn't find this information in the uploaded company policies.",
                 "confidence": payload.get("confidence", "medium"),
-
                 "follow_up_question": payload.get("follow_up_question"),
-
                 "sources": payload.get("sources", []),
             }
-
     except json.JSONDecodeError:
         pass
 
     return {
-        "answer": cleaned
-        or "I couldn't find this information in the uploaded company policies.",
+        "answer": cleaned or "I couldn't find this information in the uploaded company policies.",
         "confidence": "medium",
         "follow_up_question": None,
         "sources": [],
     }
 
 
-def generate_answer(question: str, context: str, top_k: int) -> dict:
-
-    if not model:
+def generate_with_groq(prompt: str) -> dict:
+    if not groq_client:
         return {
-            "answer": "The AI service is not configured yet. Please add GEMINI_API_KEY.",
+            "answer": "No LLM service is configured.",
             "confidence": "low",
             "follow_up_question": None,
             "sources": [],
         }
 
+    response = groq_client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.2,
+    )
+    return _parse_model_output(response.choices[0].message.content)
+
+
+def generate_answer(question: str, context: str, top_k: int) -> dict:
     prompt = f"""
 You are an AI Company Policy Assistant.
 
@@ -71,106 +81,78 @@ The retriever has selected the TOP {top_k} most relevant chunks.
 Use information from ALL retrieved chunks whenever required.
 
 If the answer is not available in the context, reply exactly:
-
 "I couldn't find this information in the uploaded company policies."
 
-Return ONLY valid JSON in this format:
-
+Return ONLY valid JSON:
 {{
-    "answer": "...",
-    "confidence": "high | medium | low",
-    "follow_up_question": null,
-    "sources": []
+ "answer":"",
+ "confidence":"high | medium | low",
+ "follow_up_question":null,
+ "sources":[]
 }}
 
-=========================
-Retrieved Context
-=========================
-
+Retrieved Context:
 {context}
 
-=========================
-User Question
-=========================
-
+User Question:
 {question}
-
 """
 
+    if gemini_model:
+        try:
+            response = gemini_model.generate_content(prompt)
+            result = _parse_model_output(getattr(response, "text", ""))
+            logger.info(f"Context length sent to LLM: {len(context)} characters")
+            logger.info("LLM response generated successfully using Gemini")
+            return result
+        except ResourceExhausted:
+            logger.warning("Gemini quota exceeded. Falling back to Groq.")
+        except Exception as e:
+            logger.error(f"Gemini failed: {e}. Falling back to Groq.")
+
     try:
-
-        response = model.generate_content(prompt)
-
-        text = getattr(response, "text", "")
-
-        return _parse_model_output(text)
-
-    except ResourceExhausted as e:
-
-        print("\n========== GEMINI RESOURCE EXHAUSTED ==========")
-        print(e)
-        print("===============================================\n")
-
-        return {
-            "answer": str(e),
-            "confidence": "low",
-            "follow_up_question": None,
-            "sources": [],
-        }
-
+        result = generate_with_groq(prompt)
+        logger.info("LLM response generated successfully using Groq")
+        return result
     except Exception as e:
-
-        print("\n========== GEMINI ERROR ==========")
-        print(e)
-        print("=================================\n")
-
         return {
-            "answer": f"An error occurred while generating the response:\n{str(e)}",
+            "answer": f"Both Gemini and Groq failed: {e}",
             "confidence": "low",
             "follow_up_question": None,
             "sources": [],
         }
 
-    logger.info(
-    f"Context length sent to LLM: {len(context)} characters"
-    )
-    logger.info(
-    "LLM response generated successfully"
-    )
-
-from logger import logger
 
 def rewrite_query(question: str) -> str:
-    """
-    Rewrite the user query using LLM to:
-    1. Correct any spelling mistakes.
-    2. Expand HR-related abbreviations (e.g. SL -> sick leave, WFH -> work from home, CL -> casual leave).
-    3. Capture contextual meaning by appending relevant synonyms or policy concept words.
-    """
-    if not model:
-        logger.warning("LLM model is not configured. Skipping query rewriting.")
-        return question
-
     prompt = f"""
-You are a helpful HR Assistant. 
-Analyze the user's question for a search query. Rewrite the question to:
-1. Correct any misspelled words.
-2. Expand all abbreviations (such as 'SL' or 'sl' to 'sick leave', 'WFH' or 'wfh' to 'work from home', 'CL' or 'cl' to 'casual leave', 'EL' or 'el' to 'earned leave', 'PL' or 'pl' to 'paid leave', 'HR' or 'hr' to 'human resources').
-3. Keep the original query's core intent but append related contextual search terms, synonyms, or concept names (e.g. if searching for "taking time off for child birth", expand it with "maternity leave paternity leave adoption leave").
-4. Return ONLY the rewritten, clean English search query without any explanation, preamble, quotes, or JSON formatting.
+Rewrite the following HR search query.
+1. Correct spelling.
+2. Expand abbreviations (SL=sick leave, CL=casual leave, EL=earned leave, PL=paid leave, WFH=work from home, HR=human resources).
+3. Add useful HR policy synonyms.
+Return only the rewritten query.
 
-User Question: {question}
-Rewritten Query:
+User Question:
+{question}
 """
-    try:
-        response = model.generate_content(prompt)
-        text = getattr(response, "text", "").strip()
-        if text:
-            # Clean up any formatting or markdown in case the model adds quotes
-            text = text.replace('"', '').replace("'", "").strip()
-            return text
-    except Exception as e:
-        logger.error(f"Failed to rewrite query using LLM: {e}")
+
+    if gemini_model:
+        try:
+            response = gemini_model.generate_content(prompt)
+            text = getattr(response, "text", "").strip()
+            if text:
+                return text.replace('"', "").replace("'", "").strip()
+        except Exception:
+            logger.warning("Gemini rewrite failed. Using Groq.")
+
+    if groq_client:
+        try:
+            response = groq_client.chat.completions.create(
+                model="meta-llama/llama-4-scout-17b-16e-instruct",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0,
+            )
+            return response.choices[0].message.content.strip().replace('"', "").replace("'", "")
+        except Exception as e:
+            logger.error(f"Groq rewrite failed: {e}")
+
     return question
-
-
