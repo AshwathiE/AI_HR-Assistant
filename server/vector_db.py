@@ -193,31 +193,54 @@ def get_all_documents():
 def get_all_chunks():
     """
     Fetch all chunks from all collections.
-    Used for automatic BM25 index rebuilding.
+    Used for rebuilding the BM25 index.
     """
+
     chunks = []
 
-    for collection_name in list_collection_names():  ##It returns all collection names stored in Qdrant.
-        records, _ = client.scroll(  ##scroll() is a Qdrant method that retrieves stored points.
+    collections = list_collection_names()
+
+    print(f"Collections found: {collections}")
+
+    for collection_name in collections:
+
+        records, _ = client.scroll(
             collection_name=collection_name,
-            limit=10000,  ## if collection contains 250 chunks no issues all are retrived , if the chunks containd 12000 then chunk size is limited to first 10000
-            with_payload=True, ##every chunk stores the meatadata
-            with_vectors=False,  ## every chunk has as embedddingd vectos so those vectors are skipped , this makes retrival faster
+            limit=10000,
+            with_payload=True,
+            with_vectors=False,
         )
 
-        for record in records:        ### for processing every chunk indvidually 
-            payload = record.payload or {}  ## Each record contains metadata if payload is missing then none to avoid errors
+        print(
+            f"{collection_name} -> {len(records)} records"
+        )
+
+        for record in records:
+
+            payload = record.payload or {}
 
             chunks.append(
                 {
-                    "id": str(record.id), ## id is converted as string as stores bcz some can be string some can be UUId
+                    "id": str(record.id),
                     "text": payload.get("text", ""),
                     "source": payload.get("source", ""),
-                    "collection_name": collection_name,
+                    "chunk_number": payload.get(
+                        "chunk_number",
+                        0,
+                    ),
+                    "collection_name": payload.get(
+                        "collection_name",
+                        collection_name,
+                    ),
                 }
             )
 
-    return chunks  ## all chunjs is stored together as one and returned
+    print(f"Total chunks fetched: {len(chunks)}")
+
+    if chunks:
+        print(chunks[0])
+
+    return chunks
 
 
 def delete_document_by_filename(source_file: str):
@@ -279,3 +302,5 @@ def restore_document_points(source_file: str, records: list):
         points=points,
     )
 
+
+    print(f"Stored {len(points)} chunks in {collection_name}")

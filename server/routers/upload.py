@@ -1,8 +1,8 @@
 import math
 import os
 import shutil
-
 from fastapi import APIRouter, File, HTTPException, Query, UploadFile
+from whoosh_db import index_chunks
 
 from config import UPLOAD_FOLDER
 from document_loader import load_document
@@ -17,7 +17,7 @@ from vector_db import (
 )
 from logger import logger
 from vocabulary import update_vocabulary
-from bm25 import build_bm25
+##from bm25 import build_bm25
 from cache import query_cache
 
 router = APIRouter()
@@ -117,6 +117,8 @@ async def upload_document(
             source_file=file.filename,
         )
 
+        index_chunks(chunks, file.filename)
+
         # 3. Clean up the backup file if replacement succeeded
         if replaced and old_file_backed_up and os.path.exists(backup_file_path):
             os.remove(backup_file_path)
@@ -128,9 +130,6 @@ async def upload_document(
 
         # Update vocabulary
         update_vocabulary(all_chunks, rebuild=replaced)
-
-        # Rebuild BM25
-        build_bm25(all_chunks)
 
         # Clear cache
         query_cache.clear()
@@ -294,7 +293,7 @@ def delete_document(filename: str):
             f"Rebuilding BM25 and vocabulary from {len(all_chunks)} remaining chunks."
         )
         update_vocabulary(all_chunks, rebuild=True)
-        build_bm25(all_chunks)
+        ###build_bm25(all_chunks)
         query_cache.clear()
         logger.info("BM25, vocabulary, and query cache refreshed after deletion.")
     except Exception as e:
@@ -310,3 +309,7 @@ def delete_document(filename: str):
         "message": f"Document '{filename}' deleted successfully.",
         "filename": filename,
     }
+@router.get("/health")
+async def health_check():
+    return {"status": "ok"} 
+

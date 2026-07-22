@@ -44,7 +44,7 @@ def rerank_documents(question, results, top_k=5): ## results : documents returen
 
 
     # Keep only required top_k results
-    RERANK_THRESHOLD = 2  ## filteration threshold 
+    RERANK_THRESHOLD = 1.5 ## filteration threshold 
 
     filtered_results = [
         result
@@ -52,7 +52,9 @@ def rerank_documents(question, results, top_k=5): ## results : documents returen
         if result["rerank_score"] > RERANK_THRESHOLD
     ]
 
-    final_results = filtered_results[:top_k] ## only the top_k results are kept in the final_results list, which is returned to the user
+    final_results = ranked_results[:top_k]
+
+    # final_results = filtered_results[:top_k] ## only the top_k results are kept in the final_results list, which is returned to the user
 
 
     # ----------------------------

@@ -5,7 +5,7 @@ bm25_index = None
 documents = [] ## stores every chunk along with meta data
 
 
-def build_bm25(chunks):  ## calledwheenver new functions are uploaded 
+def build_bm25(chunks):  ## called wheenver new functions are uploaded 
     """
     Builds/Rebuilds BM25 index using all chunks.
 
@@ -67,6 +67,8 @@ def bm25_search(query, top_k=10, selected_sources=None):  ##top_k: number of res
     global bm25_index
     global documents
 
+    print("BM25 Index: ", bm25_index)
+    print("Documents: ", documents)
     if bm25_index is None or not documents: ## if no documents indexed returns [] instead of crashing
         return []
 
@@ -110,3 +112,13 @@ def bm25_search(query, top_k=10, selected_sources=None):  ##top_k: number of res
             break
 
     return results
+
+    logger.info(f"Original query: {query}")
+
+    logger.info(f"Processed query: {processed_query}")
+
+    logger.info(f"BM25 indexed chunks: {len(all_chunks)}")
+
+    logger.info(f"BM25 exists: {bm25 is not None}")
+
+    logger.info(f"BM25 raw results: {len(bm25_results)}")

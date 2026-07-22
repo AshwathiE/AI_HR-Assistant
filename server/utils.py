@@ -1,7 +1,8 @@
 import os
 import re
 from typing import List
-
+from logger import logger
+from difflib import SequenceMatcher
 
 def allowed_file(filename: str) -> bool:
     """
@@ -13,6 +14,98 @@ def allowed_file(filename: str) -> bool:
     extension = os.path.splitext(filename)[1].lower()
 
     return extension in allowed_extensions
+
+
+def deduplicate_chunks(results, similarity_threshold=0.90):
+    """
+    Remove duplicate and near-duplicate chunks.
+
+    Phase 1: Deduplicate by point ID (exact same chunk
+             from multiple retrievers).
+    Phase 2: Deduplicate by text similarity using
+             SequenceMatcher (catches near-duplicates
+             differing by minor whitespace/punctuation).
+
+    Returns:
+        Deduplicated list keeping the higher-scored entry.
+    """
+
+    if not results:
+        return results
+
+    initial_count = len(results)
+
+    # Phase 1: Deduplicate by point ID
+    seen_ids = set()
+    id_deduped = []
+
+    for result in results:
+
+        point_id = result.get("id")
+
+        if point_id and point_id in seen_ids:
+            continue
+
+        if point_id:
+            seen_ids.add(point_id)
+
+        id_deduped.append(result)
+
+    logger.info(
+        f"Dedup phase 1 (ID): "
+        f"{initial_count} -> {len(id_deduped)}"
+    )
+
+    # Phase 2: Deduplicate by text similarity
+    unique = []
+
+    for result in id_deduped:
+
+        chunk_text_normalized = (
+            result["text"].strip().lower()
+        )
+
+        is_duplicate = False
+
+        for existing in unique:
+
+            existing_text = (
+                existing["text"].strip().lower()
+            )
+
+            # Quick length check: skip comparison if
+            # lengths differ by more than 20%
+            len_ratio = len(chunk_text_normalized) / max(
+                len(existing_text), 1
+            )
+
+            if len_ratio < 0.8 or len_ratio > 1.2:
+                continue
+
+            similarity = SequenceMatcher(
+                None,
+                chunk_text_normalized,
+                existing_text,
+            ).ratio()
+
+            if similarity >= similarity_threshold:
+                is_duplicate = True
+                break
+
+        if not is_duplicate:
+            unique.append(result)
+
+    logger.info(
+        f"Dedup phase 2 (text similarity): "
+        f"{len(id_deduped)} -> {len(unique)}"
+    )
+
+    logger.info(
+        f"Total duplicates removed: "
+        f"{initial_count - len(unique)}"
+    )
+
+    return unique
 
 
 def clean_text(text: str) -> str:
@@ -156,3 +249,80 @@ def file_exists(file_path: str) -> bool:
     """
 
     return os.path.exists(file_path)
+
+# -----------------------------------------------
+# Reciprocal Rank Fusion
+# -----------------------------------------------
+
+def reciprocal_rank_fusion(vector_results, bm25_results, k=60):
+
+    if vector_results is None:
+        vector_results = []
+
+    if bm25_results is None:
+        bm25_results = []
+    """
+    Merge results from vector search and BM25
+    using Reciprocal Rank Fusion (RRF).
+
+    Each result gets a combined score:
+        score = 1/(k + rank_vector) + 1/(k + rank_bm25)
+
+    Args:
+        vector_results: Results from Qdrant vector search
+        bm25_results: Results from BM25 keyword search
+        k: Smoothing constant (default 60)
+
+    Returns:
+        Merged list of results sorted by RRF score
+    """
+
+    scores = {}
+    result_map = {}
+
+    ##Score vector search results by rank
+    for rank, result in enumerate(vector_results):
+
+        key = result.get("id") or result["text"][:100]
+
+        scores[key] = scores.get(key, 0) + (
+            1.0 / (k + rank + 1)
+        )
+
+        result_map[key] = result
+
+    ##Score BM25 results by rank
+    for rank, result in enumerate(bm25_results):
+
+        key = result.get("id") or result["text"][:100]
+
+        scores[key] = scores.get(key, 0) + (
+            1.0 / (k + rank + 1)
+        )
+
+        # Keep whichever result has more metadata
+        if key not in result_map:
+            result_map[key] = result
+
+    # Sort by combined RRF score
+    ranked_keys = sorted(
+        scores.keys(),
+        key=lambda x: scores[x],
+        reverse=True
+    )
+
+    merged = []
+
+    for key in ranked_keys:
+
+        result = result_map[key]
+        result["rrf_score"] = round(scores[key], 6)
+        merged.append(result)
+
+    logger.info(
+        f"RRF merged: {len(vector_results)} vector + "
+        f"{len(bm25_results)} BM25 -> "
+        f"{len(merged)} combined results"
+    )
+
+    return merged

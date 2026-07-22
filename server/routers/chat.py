@@ -1,22 +1,23 @@
 # chat.py — RAG pipeline with hybrid search, deduplication, and reranking
-
 import re
 import time
 from difflib import SequenceMatcher
 from typing import List, Optional
-
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-
+from whoosh_db import search_chunks
+from utils import deduplicate_chunks
 from logger import logger
 from preprocessor import preprocess_query
 from embeddings import generate_embedding
 from vector_db import search_documents
-from bm25 import bm25_search
 from llm import generate_answer
 from reranker import rerank_documents
 from cache import query_cache
+from utils import reciprocal_rank_fusion
 
+
+from utils import deduplicate_chunks
 router = APIRouter()
 response_times = [] 
 
@@ -32,179 +33,6 @@ class ChatResponse(BaseModel):
     answer: str
     sources: Optional[list] = None
     metadata: Optional[dict] = None
-
-
-# -----------------------------------------------
-# Reciprocal Rank Fusion
-# -----------------------------------------------
-
-def reciprocal_rank_fusion(
-    vector_results,
-    bm25_results,
-    k=60
-):
-    """
-    Merge results from vector search and BM25
-    using Reciprocal Rank Fusion (RRF).
-
-    Each result gets a combined score:
-        score = 1/(k + rank_vector) + 1/(k + rank_bm25)
-
-    Args:
-        vector_results: Results from Qdrant vector search
-        bm25_results: Results from BM25 keyword search
-        k: Smoothing constant (default 60)
-
-    Returns:
-        Merged list of results sorted by RRF score
-    """
-
-    scores = {}
-    result_map = {}
-
-    # Score vector search results by rank
-    for rank, result in enumerate(vector_results):
-
-        key = result.get("id") or result["text"][:100]
-
-        scores[key] = scores.get(key, 0) + (
-            1.0 / (k + rank + 1)
-        )
-
-        result_map[key] = result
-
-    # Score BM25 results by rank
-    for rank, result in enumerate(bm25_results):
-
-        key = result.get("id") or result["text"][:100]
-
-        scores[key] = scores.get(key, 0) + (
-            1.0 / (k + rank + 1)
-        )
-
-        # Keep whichever result has more metadata
-        if key not in result_map:
-            result_map[key] = result
-
-    # Sort by combined RRF score
-    ranked_keys = sorted(
-        scores.keys(),
-        key=lambda x: scores[x],
-        reverse=True
-    )
-
-    merged = []
-
-    for key in ranked_keys:
-
-        result = result_map[key]
-        result["rrf_score"] = round(scores[key], 6)
-        merged.append(result)
-
-    logger.info(
-        f"RRF merged: {len(vector_results)} vector + "
-        f"{len(bm25_results)} BM25 -> "
-        f"{len(merged)} combined results"
-    )
-
-    return merged
-
-
-# -----------------------------------------------
-# Chunk Deduplication
-# -----------------------------------------------
-
-def deduplicate_chunks(results, similarity_threshold=0.90):
-    """
-    Remove duplicate and near-duplicate chunks.
-
-    Phase 1: Deduplicate by point ID (exact same chunk
-             from multiple retrievers).
-    Phase 2: Deduplicate by text similarity using
-             SequenceMatcher (catches near-duplicates
-             differing by minor whitespace/punctuation).
-
-    Returns:
-        Deduplicated list keeping the higher-scored entry.
-    """
-
-    if not results:
-        return results
-
-    initial_count = len(results)
-
-    # Phase 1: Deduplicate by point ID
-    seen_ids = set()
-    id_deduped = []
-
-    for result in results:
-
-        point_id = result.get("id")
-
-        if point_id and point_id in seen_ids:
-            continue
-
-        if point_id:
-            seen_ids.add(point_id)
-
-        id_deduped.append(result)
-
-    logger.info(
-        f"Dedup phase 1 (ID): "
-        f"{initial_count} -> {len(id_deduped)}"
-    )
-
-    # Phase 2: Deduplicate by text similarity
-    unique = []
-
-    for result in id_deduped:
-
-        chunk_text_normalized = (
-            result["text"].strip().lower()
-        )
-
-        is_duplicate = False
-
-        for existing in unique:
-
-            existing_text = (
-                existing["text"].strip().lower()
-            )
-
-            # Quick length check: skip comparison if
-            # lengths differ by more than 20%
-            len_ratio = len(chunk_text_normalized) / max(
-                len(existing_text), 1
-            )
-
-            if len_ratio < 0.8 or len_ratio > 1.2:
-                continue
-
-            similarity = SequenceMatcher(
-                None,
-                chunk_text_normalized,
-                existing_text,
-            ).ratio()
-
-            if similarity >= similarity_threshold:
-                is_duplicate = True
-                break
-
-        if not is_duplicate:
-            unique.append(result)
-
-    logger.info(
-        f"Dedup phase 2 (text similarity): "
-        f"{len(id_deduped)} -> {len(unique)}"
-    )
-
-    logger.info(
-        f"Total duplicates removed: "
-        f"{initial_count - len(unique)}"
-    )
-
-    return unique
-
 
 # -----------------------------------------------
 # Chat Endpoint
@@ -277,25 +105,36 @@ def chat(request: ChatRequest):
     )
     logger.info(f"Vector Retrieval Time: {time.time()-t2:.3f} sec")
     logger.info(f"Vector results: {len(vector_results)} chunks")
+    print("\n===== Vector Search Results =====")
+    for i, result in enumerate(vector_results, start=1):
+        print(f"\nChunk {i}:")
+        print(result["text"])
+    print("===== End of Vector Search Results =====\n")
 
     # ---- BM25 Keyword Search ----
     t_bm25 = time.time()
-    bm25_results = bm25_search(
-        query=cleaned_query,
-        top_k=20,
+    bm25_results = search_chunks(
+        cleaned_query,
+        top_k=top_k,
         selected_sources=request.sources,
-    )
+    )   
     logger.info(f"BM25 Retrieval Time: {time.time()-t_bm25:.3f} sec")
-    logger.info(f"BM25 results: {len(bm25_results)} chunks")
+    logger.info(f"Type of bm25_results: {type(bm25_results)}")
+    print("\n===== BM25 Search Results =====")
+    for i, result in enumerate(bm25_results, start=1):
+        print(f"\nChunk {i}:")
+        print(result["text"])
+    print("===== End of BM25 Search Results =====\n")
+    logger.info(f"bm25_results: {len(bm25_results)}")
 
-    # ---- Reciprocal Rank Fusion ----
+    # ---- Reciprocal Rank Fusion ----  
     merged_results = reciprocal_rank_fusion(
         vector_results=vector_results,
         bm25_results=bm25_results,
     )
 
     # ---- Similarity Threshold ----
-    SIMILARITY_THRESHOLD = 0.25
+    SIMILARITY_THRESHOLD = 0.30
     results = [
         r for r in merged_results
         if r.get("score", 0) >= SIMILARITY_THRESHOLD
@@ -316,6 +155,18 @@ def chat(request: ChatRequest):
     logger.info(f"Cross Encoder Time: {time.time()-t3:.3f} sec")
     logger.info(f"Final chunks after reranking: {len(results)}")
 
+    print("Type:", type(results))
+    print("Length:", len(results))
+
+    if results:
+        print("Keys:", results[0].keys())
+        print("First Result:", results[0])
+
+    logger.info(f"Cross Encoder Time: {time.time()-t3:.3f} sec")
+    logger.info(f"Final chunks after reranking: {len(results)}")
+
+
+    # ---- Context Assembly ----
     # ---- Context Assembly ----
     context = ""
     for result in results:
@@ -324,6 +175,7 @@ def chat(request: ChatRequest):
             f"{result['text']}\n\n"
         )
 
+    logger.info(f"Context length sent to LLM: {len(context)} characters")
     # ---- LLM Answer Generation ----
     t4 = time.time()
     llm_result = generate_answer(

@@ -2,13 +2,12 @@ import os
 from pathlib import Path
 
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.middleware.cors import CORSMiddleware
 
-from routers.upload import router as upload_router
-from routers.chat import router as chat_router
+from routers import chat, upload
 
 from embeddings import generate_embedding
 from vector_db import get_all_documents
@@ -16,8 +15,6 @@ from vector_db import get_all_documents
 # -----------------------------
 # Project Paths
 # -----------------------------
-
-from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -52,13 +49,14 @@ app.add_middleware(
 # -----------------------------
 # Static Files
 # -----------------------------
-
+# Uploaded PDFs will be available at:
+# http://localhost:8000/files/EmployeeBenefits.pdf
+# -----------------------------
 app.mount(
     "/static",
-    StaticFiles(directory=str(STATIC_DIR)),
+    StaticFiles(directory=CLIENT_DIR / "static"),
     name="static",
 )
-
 # -----------------------------
 # Templates
 # -----------------------------
@@ -72,13 +70,13 @@ templates = Jinja2Templates(
 # -----------------------------
 
 app.include_router(
-    upload_router,
+    upload.router,
     prefix="/upload",
     tags=["Upload"],
 )
 
 app.include_router(
-    chat_router,
+    chat.router,
     prefix="/chat",
     tags=["Chat"],
 )
@@ -149,22 +147,42 @@ def home(request: Request):
         total_points = 0
 
     return templates.TemplateResponse(
-    request=request,
-    name="index.html",
-    context={
-        "documents": files,
-        "qdrant_groups": qdrant_groups,
-        "total_points": total_points,
-    },
-)
+        request=request,
+        name="index.html",
+        context={
+            "documents": files,
+            "qdrant_groups": qdrant_groups,
+            "total_points": total_points,
+        },
+    )
 
 # -----------------------------
-# Favicon
+# Uploaded Documents
 # -----------------------------
 
-@app.get("/favicon.ico", include_in_schema=False)
-def favicon():
-    return Response(status_code=204)
+@app.get("/documents")
+def list_documents():
+
+    try:
+
+        files = sorted(
+            [
+                f
+                for f in os.listdir(UPLOAD_FOLDER)
+                if os.path.isfile(os.path.join(UPLOAD_FOLDER, f))
+            ]
+        )
+
+        return {
+            "documents": files
+        }
+
+    except Exception as e:
+
+        return {
+            "documents": [],
+            "error": str(e),
+        }
 
 # -----------------------------
 # View Database
@@ -190,27 +208,9 @@ def get_embedding_endpoint(text: str):
     }
 
 # -----------------------------
-# Uploaded Documents
+# Favicon
 # -----------------------------
 
-@app.get("/documents")
-def list_documents():
-
-    try:
-
-        files = sorted(
-            [
-                f
-                for f in os.listdir(UPLOAD_FOLDER)
-                if os.path.isfile(os.path.join(UPLOAD_FOLDER, f))
-            ]
-        )
-
-        return {"documents": files}
-
-    except Exception as e:
-
-        return {
-            "documents": [],
-            "error": str(e),
-        }
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    return Response(status_code=204)
