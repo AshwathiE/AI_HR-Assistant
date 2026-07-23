@@ -1,20 +1,21 @@
 # chat.py — RAG pipeline with hybrid search, deduplication, and reranking
+from transformers.models import gpt_sw3
 import re
 import time
 from difflib import SequenceMatcher
 from typing import List, Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from whoosh_db import search_chunks
+##from whoosh_db import search_chunks
 from utils import deduplicate_chunks
 from logger import logger
 from preprocessor import preprocess_query
 from embeddings import generate_embedding
 from vector_db import search_documents
 from llm import generate_answer
-from reranker import rerank_documents
+##from reranker import rerank_documents
 from cache import query_cache
-from utils import reciprocal_rank_fusion
+##from utils import reciprocal_rank_fusion
 
 
 from utils import deduplicate_chunks
@@ -112,29 +113,26 @@ def chat(request: ChatRequest):
     print("===== End of Vector Search Results =====\n")
 
     # ---- BM25 Keyword Search ----
-    t_bm25 = time.time()
-    bm25_results = search_chunks(
-        cleaned_query,
-        top_k=top_k,
-        selected_sources=request.sources,
-    )   
-    logger.info(f"BM25 Retrieval Time: {time.time()-t_bm25:.3f} sec")
-    logger.info(f"Type of bm25_results: {type(bm25_results)}")
-    print("\n===== BM25 Search Results =====")
-    for i, result in enumerate(bm25_results, start=1):
-        print(f"\nChunk {i}:")
-        print(result["text"])
-    print("===== End of BM25 Search Results =====\n")
-    logger.info(f"bm25_results: {len(bm25_results)}")
+    ##t_bm25 = time.time()
+    ##bm25_results = search_chunks(
+        ##cleaned_query,
+       ## top_k=top_k,
+        ##selected_sources=request.sources,
+    ##)   
+    ##logger.info(f"BM25 Retrieval Time: {time.time()-t_bm25:.3f} sec")
+    ##logger.info(f"Type of bm25_results: {type(bm25_results)}")
+    #print("\n===== BM25 Search Results =====")
+    ##for i, result in enumerate(bm25_results, start=1):
+       ## print(f"\nChunk {i}:")
+        ##print(result["text"])
+    ##print("===== End of BM25 Search Results =====\n")
+    ##logger.info(f"bm25_results: {len(bm25_results)}")
 
     # ---- Reciprocal Rank Fusion ----  
-    merged_results = reciprocal_rank_fusion(
-        vector_results=vector_results,
-        bm25_results=bm25_results,
-    )
+    merged_results = vector_results
 
     # ---- Similarity Threshold ----
-    SIMILARITY_THRESHOLD = 0.30
+    SIMILARITY_THRESHOLD = 0.30 ## keep it above 0.60
     results = [
         r for r in merged_results
         if r.get("score", 0) >= SIMILARITY_THRESHOLD
@@ -146,25 +144,18 @@ def chat(request: ChatRequest):
     results = deduplicate_chunks(results)
 
     # ---- Cross-Encoder Reranking ----
-    t3 = time.time()
-    results = rerank_documents(
-        question=cleaned_query,
-        results=results,
-        top_k=top_k,
-    )
-    logger.info(f"Cross Encoder Time: {time.time()-t3:.3f} sec")
-    logger.info(f"Final chunks after reranking: {len(results)}")
+    ##t3 = time.time()
+    ##results = rerank_documents(
+        ##question=cleaned_query,
+        ##results=results,
+        ##top_k=top_k,
+    ##)
+    ##logger.info(f"Cross Encoder Time: {time.time()-t3:.3f} sec")
+    ##logger.info(f"Final chunks after reranking: {len(results)}")
 
-    print("Type:", type(results))
-    print("Length:", len(results))
-
-    if results:
-        print("Keys:", results[0].keys())
-        print("First Result:", results[0])
-
-    logger.info(f"Cross Encoder Time: {time.time()-t3:.3f} sec")
-    logger.info(f"Final chunks after reranking: {len(results)}")
-
+    ##if results:
+        ##print("Keys:", results[0].keys())
+        ##print("First Result:", results[0])
 
     # ---- Context Assembly ----
     # ---- Context Assembly ----

@@ -105,7 +105,7 @@ def fuzzy_correct_keywords(keywords):
         match = process.extractOne(  #t compares the user's word against every word in the vocabulary
             word,
             vocabulary,
-            scorer=fuzz.WRatio
+            scorer=fuzz.ratio
         )
 
         if match:

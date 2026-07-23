@@ -2,7 +2,7 @@ import math
 import os
 import shutil
 from fastapi import APIRouter, File, HTTPException, Query, UploadFile
-from whoosh_db import index_chunks
+##from whoosh_db import index_chunks
 
 from config import UPLOAD_FOLDER
 from document_loader import load_document
@@ -101,6 +101,16 @@ async def upload_document(
         # Split into chunks with size of 700 characters
         chunks = chunk_text(cleaned_text, chunk_size=700)
 
+        print("\n========== GENERATED CHUNKS ==========")
+        print("Number of chunks:", len(chunks))
+
+        for i, chunk in enumerate(chunks, 1):
+            print(f"\nChunk {i}")
+            print(chunk)
+            print("-" * 80)
+
+        print("========== END OF CHUNKS ==========\n")
+
         if not chunks:
             raise HTTPException(
                 status_code=400,
@@ -116,8 +126,6 @@ async def upload_document(
             embeddings=embeddings,
             source_file=file.filename,
         )
-
-        index_chunks(chunks, file.filename)
 
         # 3. Clean up the backup file if replacement succeeded
         if replaced and old_file_backed_up and os.path.exists(backup_file_path):

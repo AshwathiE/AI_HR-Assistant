@@ -47,31 +47,31 @@ def get_index():
 # Index Chunks
 # ---------------------------------------------------
 
-def index_chunks(chunks, source_file):
+##def index_chunks(chunks, source_file):
     """
     Index document chunks into Whoosh.
     Removes previous entries of the same document.
     """
 
-    ix = get_index()
+    ##ix = get_index()
 
-    writer = ix.writer()
+    ##writer = ix.writer()
 
     # Delete previous indexed version (if exists)
-    writer.delete_by_term("source", source_file)
+    ##writer.delete_by_term("source", source_file)
 
-    for i, chunk in enumerate(chunks):
+    ##for i, chunk in enumerate(chunks):
 
-        writer.add_document(
-            id=str(uuid4()),
-            text=chunk,
-            source=source_file,
-            chunk_number=i + 1,
-        )
+        ##writer.add_document(
+        ##    id=str(uuid4()),
+        ##    text=chunk,
+        ##    source=source_file,
+        ##    chunk_number=i + 1,
+        ##)
 
-    writer.commit()
+    ##writer.commit()
 
-    print(f"Indexed {len(chunks)} chunks from '{source_file}'.")
+    ##print(f"Indexed {len(chunks)} chunks from '{source_file}'.")
 
 # ---------------------------------------------------
 # Search

@@ -1,3 +1,4 @@
+from logger import logger
 import hashlib
 import os
 import re
@@ -88,9 +89,14 @@ def store_document(chunks, embeddings, source_file): ##stores the documents in v
     )
 
     return collection_name
+def search_documents(query_embedding, top_k=20, selected_sources=None):
+    """
+    Retrieves the top_k most similar chunks across all collections.
 
+    If fewer than top_k chunks are available, returns only the available chunks.
+    Results are globally ranked by cosine similarity (highest first).
+    """
 
-def search_documents(query_embedding, top_k=3, selected_sources=None):
     collections = list_collection_names()
 
     if not collections:
@@ -98,12 +104,13 @@ def search_documents(query_embedding, top_k=3, selected_sources=None):
 
     results = []
 
+    # Search each collection
     for collection_name in collections:
 
         response = client.query_points(
             collection_name=collection_name,
             query=query_embedding,
-            limit=top_k,
+            limit=top_k,          # User-selected Top-K per collection
             with_payload=True,
             with_vectors=False,
         )
@@ -113,6 +120,7 @@ def search_documents(query_embedding, top_k=3, selected_sources=None):
             payload = point.payload or {}
             source = payload.get("source", "Unknown")
 
+            # Skip documents not selected by the user
             if selected_sources and source not in selected_sources:
                 continue
 
@@ -131,9 +139,52 @@ def search_documents(query_embedding, top_k=3, selected_sources=None):
                 }
             )
 
-    results.sort(key=lambda x: x["score"], reverse=True)
-    return results[:top_k]
+    # Global ranking
+    results.sort(
+        key=lambda x: x["score"],
+        reverse=True,
+    )
 
+    # Remove duplicate chunks (optional)
+    seen = set()
+    unique_results = []
+
+    for result in results:
+
+        key = (
+            result["document"],
+            result["chunk_number"],
+        )
+
+        if key in seen:
+            continue
+
+        seen.add(key)
+        unique_results.append(result)
+
+    # If fewer than top_k exist, return only those
+    final_results = unique_results[:top_k]
+
+    logger.info("\n===== GLOBAL TOP RESULTS =====")
+
+    for rank, result in enumerate(final_results, start=1):
+
+        logger.info(
+            f"Rank {rank} | "
+            f"Cosine Similarity: {result['score']:.4f} | "
+            f"Document: {result['document']} | "
+            f"Chunk: {result['chunk_number']}"
+        )
+
+    logger.info(
+        f"User selected Top-K : {top_k}"
+    )
+
+    logger.info(
+        f"Chunks returned      : {len(final_results)}"
+    )
+
+    return final_results
 
 def get_uploaded_documents():
     documents = set()
