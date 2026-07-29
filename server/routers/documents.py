@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from vector_db import get_all_documents
+from services.vector_db import get_all_documents
 
 router = APIRouter()
 

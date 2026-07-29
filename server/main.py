@@ -9,8 +9,8 @@ from fastapi.templating import Jinja2Templates
 
 from routers import chat, upload
 
-from embeddings import generate_embedding
-from vector_db import get_all_documents
+from services.embeddings import generate_embedding
+from services.vector_db import get_all_documents
 
 # -----------------------------
 # Project Paths

@@ -2,22 +2,19 @@ import math
 import os
 import shutil
 from fastapi import APIRouter, File, HTTPException, Query, UploadFile
-##from whoosh_db import index_chunks
-
 from config import UPLOAD_FOLDER
-from document_loader import load_document
-from embeddings import generate_embeddings
-from utils import chunk_text, clean_text
-from vector_db import (
+from services.document_loader import load_document
+from services.embeddings import generate_embeddings
+from utils.utils import chunk_text, clean_text
+from services.vector_db import (
     store_document,
     get_all_chunks,
     delete_document_by_filename,
     get_document_points,
     restore_document_points,
 )
-from logger import logger
-from vocabulary import update_vocabulary
-##from bm25 import build_bm25
+from utils.logger import logger
+from services.vocabulary import update_vocabulary
 from cache import query_cache
 
 router = APIRouter()
@@ -89,6 +86,9 @@ async def upload_document(
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
+        print("Uploaded File:", file_path)
+        print("File Exists:", os.path.exists(file_path))
+
         text = load_document(file_path)
         cleaned_text = clean_text(text)
 
@@ -99,7 +99,7 @@ async def upload_document(
             )
 
         # Split into chunks with size of 700 characters
-        chunks = chunk_text(cleaned_text, chunk_size=700)
+        chunks = chunk_text(cleaned_text)
 
         print("\n========== GENERATED CHUNKS ==========")
         print("Number of chunks:", len(chunks))
