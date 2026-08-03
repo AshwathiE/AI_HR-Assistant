@@ -38,7 +38,7 @@ def _parse_model_output(output: str) -> dict:
         if isinstance(payload, dict):
             return {
                 "answer": payload.get("answer") or payload.get("response") or
-                "I couldn't find this information in the uploaded company policies.",
+                "I couldn't find this information in the uploaded files.",
                 "confidence": payload.get("confidence", "medium"),
                 "follow_up_question": payload.get("follow_up_question"),
                 "sources": payload.get("sources", []),
@@ -47,7 +47,7 @@ def _parse_model_output(output: str) -> dict:
         pass
 
     return {
-        "answer": cleaned or "I couldn't find this information in the uploaded company policies.",
+        "answer": cleaned or "I couldn't find this information in the uploaded files.",
         "confidence": "medium",
         "follow_up_question": None,
         "sources": [],
@@ -73,23 +73,29 @@ def generate_with_groq(prompt: str) -> dict:
 
 def generate_answer(question: str, context: str, top_k: int) -> dict:
     prompt = f"""
-You are an AI Company Policy Assistant.
+You are an AI Assistant.
 
-Answer ONLY from the retrieved context.
+Answer the user's question only using the provided context.
 
-The retriever has selected the TOP {top_k} most relevant chunks.
-Use information from ALL retrieved chunks whenever required.
+The retrieved context may come from one or more different documents.
 
-If the answer is not available in the context, reply exactly:
-"I couldn't find this information in the uploaded company policies."
+Rules:
 
-Return ONLY valid JSON:
-{{
- "answer":"",
- "confidence":"high | medium | low",
- "follow_up_question":null,
- "sources":[]
-}}
+1. Read every retrieved section carefully before answering.
+2. Treat each document as an independent source of information.
+3. Never infer relationships between different documents unless the user explicitly asks to compare or relate them.
+4. If multiple retrieved chunks belong to the same document, combine the information from those chunks into a complete answer.
+5. If relevant information exists in multiple documents, present the information separately under the corresponding document or topic instead of merging them into a single statement.
+6. Ignore retrieved sections that are unrelated to the user's question.
+7. Do not generate information that is not present in the provided context.
+8. If the required information is not found in any retrieved section, respond:
+   "I couldn't find this information in the uploaded documents."
+
+Response Guidelines:
+- Answer directly and clearly.
+- Keep information from different documents separate.
+- Do not mix facts from unrelated documents.
+- Use headings or bullet points when multiple documents contribute relevant information.
 
 Retrieved Context:
 {context}
@@ -123,36 +129,36 @@ User Question:
         }
 
 
-def rewrite_query(question: str) -> str:
-    prompt = f"""
-Rewrite the following HR search query.
-1. Correct spelling.
-2. Expand abbreviations (SL=sick leave, CL=casual leave, EL=earned leave, PL=paid leave, WFH=work from home, HR=human resources).
-3. Add useful HR policy synonyms.
-Return only the rewritten query.
+##def rewrite_query(question: str) -> str:
+  ##  prompt = f"""
+##Rewrite the following HR search query.
+##1. Correct spelling.
+##2. Expand abbreviations (SL=sick leave, CL=casual leave, EL=earned leave, PL=paid leave, WFH=work from home, HR=human resources).
+##3. Add useful HR policy synonyms.
+##Return only the rewritten query.
 
-User Question:
-{question}
-"""
+##User Question:
+##{question}
+##"""
 
-    if gemini_model:
-        try:
-            response = gemini_model.generate_content(prompt)
-            text = getattr(response, "text", "").strip()
-            if text:
-                return text.replace('"', "").replace("'", "").strip()
-        except Exception:
-            logger.warning("Gemini rewrite failed. Using Groq.")
+##    if gemini_model:
+    ##    try:
+    ##        response = gemini_model.generate_content(prompt)
+    ##        text = getattr(response, "text", "").strip()
+    ##        if text:
+    ##            return text.replace('"', "").replace("'", "").strip()
+    ##    except Exception:
+    ##        logger.warning("Gemini rewrite failed. Using Groq.")
 
-    if groq_client:
-        try:
-            response = groq_client.chat.completions.create(
-                model="meta-llama/llama-4-scout-17b-16e-instruct",
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0,
-            )
-            return response.choices[0].message.content.strip().replace('"', "").replace("'", "")
-        except Exception as e:
-            logger.error(f"Groq rewrite failed: {e}")
+    ##if groq_client:
+        ##try:
+            ##response = groq_client.chat.completions.create(
+            ##    model="meta-llama/llama-4-scout-17b-16e-instruct",
+            ##    messages=[{"role": "user", "content": prompt}],
+            ##    temperature=0,
+            ##)
+           ## return response.choices[0].message.content.strip().replace('"', "").replace("'", "")
+        ##except Exception as e:
+          ##  logger.error(f"Groq rewrite failed: {e}")
 
-    return question
+    ##return question

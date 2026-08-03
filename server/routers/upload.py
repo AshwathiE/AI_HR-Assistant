@@ -16,6 +16,10 @@ from services.vector_db import (
 from utils.logger import logger
 from services.vocabulary import update_vocabulary
 from cache import query_cache
+from utils.utils import (
+    extract_section,
+    extract_topics,
+)
 
 router = APIRouter()
 
@@ -118,11 +122,31 @@ async def upload_document(
             )
 
         # Generate embeddings
-        embeddings = generate_embeddings(chunks)
+        from services.embeddings import generate_document_embeddings
 
-        # Store in Qdrant
+        processed_chunks = []
+
+        for i, chunk in enumerate(chunks):
+
+            section = extract_section(chunk)
+            topics = extract_topics(chunk)
+
+            processed_chunks.append({
+                "text": chunk,
+                "section": section,
+                "topics": topics,
+                "chunk_number": i + 1,
+            })
+
+        # Generate embeddings ONCE for all processed chunks
+        embeddings = generate_document_embeddings(
+            chunks=processed_chunks,
+            document_name=file.filename,
+        )
+
+        # Store all processed chunks in a single upload
         collection_name = store_document(
-            chunks=chunks,
+            chunks=processed_chunks,
             embeddings=embeddings,
             source_file=file.filename,
         )
@@ -320,4 +344,3 @@ def delete_document(filename: str):
 @router.get("/health")
 async def health_check():
     return {"status": "ok"} 
-

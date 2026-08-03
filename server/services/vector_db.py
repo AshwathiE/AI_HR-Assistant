@@ -13,6 +13,10 @@ from qdrant_client.models import (
     VectorParams,
 )
 
+import spacy
+
+nlp = spacy.load("en_core_web_sm")
+
 load_dotenv()
 
 QDRANT_URL = os.getenv("QDRANT_URL")
@@ -21,10 +25,11 @@ QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
 client = QdrantClient(
     url=QDRANT_URL,
     api_key=QDRANT_API_KEY,
+    timeout=500
 )
 
 COLLECTION_PREFIX = "company_policy"
-VECTOR_SIZE = 384
+VECTOR_SIZE = 768
 
 
 def _slugify(text: str):##used to create a unique name for each document
@@ -62,34 +67,57 @@ def list_collection_names():
         if c.name.startswith(COLLECTION_PREFIX)
     ]
 
-
-def store_document(chunks, embeddings, source_file): ##stores the documents in vector db with there embeddings and metadata
+def store_document(chunks, embeddings, source_file):
     collection_name = get_collection_name(source_file)
     ensure_collection(collection_name)
+    BATCH_SIZE = 100
 
     points = []
 
-    for i, (chunk, embedding) in enumerate(zip(chunks, embeddings)):
+    for chunk, embedding in zip(chunks, embeddings):
+
         points.append(
             PointStruct(
                 id=str(uuid4()),
                 vector=embedding,
                 payload={
-                    "text": chunk,
+                    "text": chunk["text"],
+                    "section": chunk["section"],
+                    "topics": chunk["topics"],
                     "source": source_file,
-                    "chunk_number": i + 1,
+                    "chunk_number": chunk["chunk_number"],
                     "collection_name": collection_name,
-                },
-            )
+            },
         )
-
-    client.upsert(
-        collection_name=collection_name,
-        points=points,
     )
 
+    total_points = len(points)
+
+    logger.info(f"Uploading {total_points} chunks to Qdrant...")
+
+    for start in range(0, total_points, BATCH_SIZE):
+
+        end = min(start + BATCH_SIZE, total_points)
+
+        batch = points[start:end]
+
+        client.upsert(
+            collection_name=collection_name,
+            points=batch,
+            wait=True,
+        )
+
+        logger.info(
+            f"Uploaded batch {start//BATCH_SIZE + 1} "
+            f"({start+1}-{end} of {total_points})"
+        )
+
+    logger.info("Document upload completed successfully.")
+
     return collection_name
-def search_documents(query_embedding, top_k=20, selected_sources=None):
+
+
+def search_documents(query,query_embedding,top_k=20,selected_sources=None):
     """
     Retrieves the top_k most similar chunks across all collections.
 
@@ -112,7 +140,6 @@ def search_documents(query_embedding, top_k=20, selected_sources=None):
 
     # Search each collection
     for collection_name in collections:
-
         # If the user selected specific documents,
         # search only those collections
         if selected_sources:
@@ -149,19 +176,38 @@ def search_documents(query_embedding, top_k=20, selected_sources=None):
                 continue
 
             results.append(
-                {
-                    "id": str(point.id),
-                    "score": float(point.score),
-                    "payload": payload,
-                    "text": payload.get("text", ""),
-                    "document": source,
-                    "chunk_number": payload.get("chunk_number", 0),
-                    "collection_name": payload.get(
-                        "collection_name",
-                        collection_name,
-                    ),
-                }
-            )
+    {
+        "id": str(point.id),
+        "score": float(point.score),
+        "payload": payload,
+        "text": payload.get("text", ""),
+        "section": payload.get("section", ""),
+        "topics": payload.get("topics", []),
+        "document": source,
+        "chunk_number": payload.get("chunk_number", 0),
+        "collection_name": payload.get(
+            "collection_name",
+            collection_name,
+        ),
+    }
+)
+
+    query_doc = nlp(query)
+
+    for result in results:
+
+        topics = result["payload"].get("topics", [])
+
+        if not topics:
+            continue
+
+        topic_text = " ".join(topics)
+
+        topic_doc = nlp(topic_text)
+
+        similarity = query_doc.similarity(topic_doc)
+
+        result["score"] += similarity * 0.10
 
     # Global ranking
     results.sort(
@@ -295,20 +341,19 @@ def get_all_chunks():
             payload = record.payload or {}
 
             chunks.append(
-                {
-                    "id": str(record.id),
-                    "text": payload.get("text", ""),
-                    "source": payload.get("source", ""),
-                    "chunk_number": payload.get(
-                        "chunk_number",
-                        0,
-                    ),
-                    "collection_name": payload.get(
-                        "collection_name",
-                        collection_name,
-                    ),
-                }
-            )
+    {
+        "id": str(record.id),
+        "text": payload.get("text", ""),
+        "section": payload.get("section", ""),
+        "topics": payload.get("topics", []),
+        "source": payload.get("source", ""),
+        "chunk_number": payload.get("chunk_number", 0),
+        "collection_name": payload.get(
+            "collection_name",
+            collection_name,
+        ),
+    }
+)
 
     print(f"Total chunks fetched: {len(chunks)}")
 
@@ -375,6 +420,7 @@ def restore_document_points(source_file: str, records: list):
     client.upsert(
         collection_name=collection_name,
         points=points,
+        wait=False,
     )
 
 

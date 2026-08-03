@@ -1012,3 +1012,91 @@ def preprocess_query(query: str):
     logger.info("=" * 60)
 
     return cleaned_query, keywords
+
+import re
+
+def build_embedding_text(
+    chunk_text: str,
+    document_name: str,
+    chunk_number: int,
+    section_title: str = None,
+):
+    """
+    Create enriched text for embedding only.
+    The original chunk is NOT modified.
+    """
+
+    # Extract simple keywords
+    words = re.findall(r"\b[a-zA-Z]{4,}\b", chunk_text.lower())
+
+    stop_words = {
+        "this", "that", "with", "have", "from",
+        "they", "their", "should", "would",
+        "about", "there", "which", "where",
+        "employees", "employee"
+    }
+
+    keywords = []
+
+    for word in words:
+        if word not in stop_words and word not in keywords:
+            keywords.append(word)
+
+        if len(keywords) == 10:
+            break
+
+    enriched_text = f"""
+Document:
+{document_name}
+
+Section:
+{section_title if section_title else "General"}
+
+Chunk:
+{chunk_number}
+
+Keywords:
+{", ".join(keywords)}
+
+Content:
+{chunk_text}
+"""
+
+    return enriched_text
+
+import spacy
+
+nlp = spacy.load("en_core_web_sm")
+
+
+def extract_section(chunk: str):
+    """
+    Extract the first heading from the chunk.
+    """
+
+    lines = [line.strip() for line in chunk.split("\n") if line.strip()]
+
+    if lines:
+        return lines[0]
+
+    return ""
+
+
+def extract_topics(chunk: str):
+    """
+    Extract important noun phrases from the chunk.
+    """
+
+    doc = nlp(chunk)
+
+    topics = []
+
+    for noun in doc.noun_chunks:
+        text = noun.text.strip().lower()
+
+        if len(text) > 3:
+            topics.append(text)
+
+    topics = list(dict.fromkeys(topics))
+
+    return topics

@@ -2,25 +2,7 @@ from sentence_transformers import SentenceTransformer
 
 # Load the embedding model only once
 # This model generates 384-dimensional embeddings
-model = SentenceTransformer("all-MiniLM-L6-v2")
-
-
-def generate_embedding(text: str):
-    """
-    Generate embedding for a single text string.
-
-    Args:
-        text (str): Input text
-
-    Returns:
-        list: Embedding vector
-    """
-    if not text.strip():
-        return []
-
-    embedding = model.encode(text) #check the datatype of this ---string to  numpy ndimensional array with floating point numbers
-
-    return embedding.tolist() ##converts the numpy ndimensional array to list of 384 floating point numbers
+model = SentenceTransformer("BAAI/bge-base-en-v1.5")
 def generate_embeddings(text_chunks): ## generates multiple embeddings 
     """
     Generate embeddings for multiple text chunks.
@@ -41,3 +23,62 @@ def generate_embeddings(text_chunks): ## generates multiple embeddings
     logger.info(
     "Query embedding generated successfully"
 )
+
+
+import re
+
+
+def build_embedding_text(
+    chunk_text: str,
+    document_name: str,
+    chunk_number: int,
+    section_title: str,
+    topics: list,
+):
+    """
+    Creates enriched text for embedding.
+    Original chunk is NOT modified.
+    """
+
+    embedding_text = f"""
+Document:
+{document_name}
+
+Section:
+{section_title}
+
+Topics:
+{", ".join(topics)}
+
+Content:
+{chunk_text}
+"""
+
+    return embedding_text
+
+
+def generate_document_embeddings(chunks, document_name):
+
+    embedding_texts = []
+
+    for chunk in chunks:
+
+        embedding_texts.append(
+            build_embedding_text(
+                chunk_text=chunk["text"],
+                document_name=document_name,
+                chunk_number=chunk["chunk_number"],
+                section_title=chunk["section"],
+                topics=chunk["topics"],
+            )
+        )
+
+    embeddings = model.encode(
+        embedding_texts,
+        batch_size=64,
+        show_progress_bar=True,
+        convert_to_numpy=True,
+        normalize_embeddings=True,
+    )
+
+    return embeddings.tolist()

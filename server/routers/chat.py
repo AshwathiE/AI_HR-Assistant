@@ -17,9 +17,6 @@ from cache import query_cache
 router = APIRouter()
 response_times = []
 
-SIMILARITY_THRESHOLD = 0.35
-
-
 class ChatRequest(BaseModel):
     question: str
     top_k: int = 3
@@ -38,6 +35,8 @@ class ChatResponse(BaseModel):
 def chat(request: ChatRequest):
 
     start_time = time.time()
+
+    logger.info(f"Top-K received from UI: {request.top_k}") 
 
     question = request.question.strip()
     selected_document = request.selected_document
@@ -70,7 +69,9 @@ def chat(request: ChatRequest):
 
     query_embedding = generate_embedding(search_text)
 
-    top_k = max(1, min(request.top_k or 3, 10))
+    top_k = max(1, min(request.top_k or 3, 20))
+
+    logger.info(f"Top-K used by backend: {top_k}")
 
     selected_sources = None
     if selected_document:
@@ -81,26 +82,28 @@ def chat(request: ChatRequest):
     fallback_used = False
 
     vector_results = search_documents(
+        query=question,
         query_embedding=query_embedding,
         top_k=20,
         selected_sources=selected_sources,
-    )
+)
 
-    merged_results = vector_results
+    results = vector_results
 
-    if merged_results:
-        best_score = merged_results[0]["score"]
-        similarity_threshold = best_score * 0.80
+    if results:
+        best_score = results[0]["score"]
+        similarity_threshold = best_score * 0.75
     else:
         similarity_threshold = 0
 
     results = [
-        r for r in merged_results
+        r for r in results
         if r["score"] >= similarity_threshold
     ]
 
-    results = results[:top_k]
     results = deduplicate_chunks(results)
+
+    results = results[:top_k]
 
     context = ""
     for result in results:
@@ -109,16 +112,39 @@ def chat(request: ChatRequest):
             f"{result['text']}\n\n"
         )
 
+    logger.info(f"Results after filtering: {len(results)}")
+
     llm_result = generate_answer(
         question=question,
         context=context,
         top_k=top_k,
     )
 
+    logger.info("========== CHUNKS SENT TO LLM ==========")
+
+    for i, result in enumerate(results, start=1):
+       logger.info(
+        f"""
+        Chunk {i}
+        Document : {result['document']}
+        Chunk No : {result['chunk_number']}
+        Score    : {result['score']:.4f}
+
+    {result['text']}
+--------------------------------------------------------
+ """
+    )
+
+    logger.info(f"Total chunks sent to LLM: {len(results)}")
+    logger.info(f"Context length: {len(context)} characters")
+    logger.info("========================================")
+
     answer = llm_result.get(
         "answer",
-        "I couldn't find this information in the uploaded company policies.",
+        "I couldn't find this information in the uploaded files.",
     )
+
+    # Create payload for memory collection
 
     source_document = None
     if results:
