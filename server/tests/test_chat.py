@@ -66,6 +66,7 @@ def _make_result(
         "id": uid,
         "score": score,
         "text": text,
+        "topics": ["sick leave", "leave policy"],
         "document": doc,
         "chunk_number": chunk,
         "collection_name": f"company_policy_{doc.lower().replace('.', '_')}_abc12345",
@@ -352,7 +353,7 @@ class TestChatSuccessfulRequests:
             assert sources[0]["document"] == "LeavePolicy.pdf"
             assert sources[0]["chunk_number"] == 1
             assert sources[0]["score"] == 0.9543
-            assert sources[0]["text"] == result["text"]
+            assert sources[0]["topics"] == result["topics"]
 
     def test_verify_metadata(self, client):
         """Verify metadata fields top_k, retrieval_count, and search_text are accurate."""

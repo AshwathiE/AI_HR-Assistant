@@ -13,9 +13,7 @@ from qdrant_client.models import (
     VectorParams,
 )
 
-import spacy
 
-nlp = spacy.load("en_core_web_sm")
 
 load_dotenv()
 
@@ -82,14 +80,13 @@ def store_document(chunks, embeddings, source_file):
                 vector=embedding,
                 payload={
                     "text": chunk["text"],
-                    "section": chunk["section"],
                     "topics": chunk["topics"],
                     "source": source_file,
                     "chunk_number": chunk["chunk_number"],
                     "collection_name": collection_name,
-            },
+                },
+            )
         )
-    )
 
     total_points = len(points)
 
@@ -117,7 +114,7 @@ def store_document(chunks, embeddings, source_file):
     return collection_name
 
 
-def search_documents(query,query_embedding,top_k=20,selected_sources=None):
+def search_documents(query_embedding,top_k=20,selected_sources=None):
     """
     Retrieves the top_k most similar chunks across all collections.
 
@@ -181,7 +178,6 @@ def search_documents(query,query_embedding,top_k=20,selected_sources=None):
         "score": float(point.score),
         "payload": payload,
         "text": payload.get("text", ""),
-        "section": payload.get("section", ""),
         "topics": payload.get("topics", []),
         "document": source,
         "chunk_number": payload.get("chunk_number", 0),
@@ -192,22 +188,7 @@ def search_documents(query,query_embedding,top_k=20,selected_sources=None):
     }
 )
 
-    query_doc = nlp(query)
 
-    for result in results:
-
-        topics = result["payload"].get("topics", [])
-
-        if not topics:
-            continue
-
-        topic_text = " ".join(topics)
-
-        topic_doc = nlp(topic_text)
-
-        similarity = query_doc.similarity(topic_doc)
-
-        result["score"] += similarity * 0.10
 
     # Global ranking
     results.sort(
@@ -344,7 +325,6 @@ def get_all_chunks():
     {
         "id": str(record.id),
         "text": payload.get("text", ""),
-        "section": payload.get("section", ""),
         "topics": payload.get("topics", []),
         "source": payload.get("source", ""),
         "chunk_number": payload.get("chunk_number", 0),

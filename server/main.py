@@ -8,8 +8,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from routers import chat, upload
-
-from services.embeddings import generate_embedding
 from services.vector_db import get_all_documents
 
 # -----------------------------
@@ -191,21 +189,6 @@ def list_documents():
 @app.get("/view-db")
 def view_db():
     return get_all_documents()
-
-# -----------------------------
-# Embedding Test
-# -----------------------------
-
-@app.get("/embedding")
-def get_embedding_endpoint(text: str):
-
-    embedding = generate_embedding(text)
-
-    return {
-        "text": text,
-        "dimensions": len(embedding),
-        "first_10_values": embedding[:10],
-    }
 
 # -----------------------------
 # Favicon

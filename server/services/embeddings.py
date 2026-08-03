@@ -1,77 +1,67 @@
+import re
 from sentence_transformers import SentenceTransformer
 
-# Load the embedding model only once
-# This model generates 384-dimensional embeddings
+# Load the embedding model only once.
+# This model generates 768-dimensional embeddings.
 model = SentenceTransformer("BAAI/bge-base-en-v1.5")
-def generate_embeddings(text_chunks): ## generates multiple embeddings 
+
+
+def generate_embeddings(text_chunks):  ## to generate embediings for user querry
     """
-    Generate embeddings for multiple text chunks.
+    Generate embeddings for multiple text chunks (or a single string).
 
     Args:
-        text_chunks (list): List of text chunks
+        text_chunks (list | str): Text chunks to embed.
 
     Returns:
-        list: List of embedding vectors
+        list: List of embedding vectors.
     """
-
     if not text_chunks:
         return []
 
     embeddings = model.encode(text_chunks)
-
     return embeddings.tolist()
-    logger.info(
-    "Query embedding generated successfully"
-)
 
 
-import re
-
-
-def build_embedding_text(
-    chunk_text: str,
-    document_name: str,
-    chunk_number: int,
-    section_title: str,
-    topics: list,
-):
+def build_embedding_text(topics: list) -> str: ## to genrate embeddings only from topics 
     """
-    Creates enriched text for embedding.
-    Original chunk is NOT modified.
+    Creates embedding text from extracted topics ONLY.
+
+    No chunk text, section title, document name, or chunk number is
+    included — purely topics so that semantic retrieval is driven
+    entirely by topic similarity.
+
+    Args:
+        topics: List of topic strings extracted from the chunk.
+
+    Returns:
+        A newline-joined string of topics ready for embedding.
     """
+    if not topics:
+        return ""
 
-    embedding_text = f"""
-Document:
-{document_name}
-
-Section:
-{section_title}
-
-Topics:
-{", ".join(topics)}
-
-Content:
-{chunk_text}
-"""
-
-    return embedding_text
+    # One topic per line for clean embedding input
+    return "\n".join(topics)
 
 
-def generate_document_embeddings(chunks, document_name):
+def generate_document_embeddings(chunks: list, document_name: str) -> list:
+    """
+    Generate embeddings for every chunk in the list.
 
-    embedding_texts = []
+    Embeddings are generated ONLY from chunk["topics"].
+    The original chunk text is never used here.
 
-    for chunk in chunks:
+    Args:
+        chunks:        List of dicts, each containing at least {"topics": [...]}.
+        document_name: Name of the source document (kept for logging only).
 
-        embedding_texts.append(
-            build_embedding_text(
-                chunk_text=chunk["text"],
-                document_name=document_name,
-                chunk_number=chunk["chunk_number"],
-                section_title=chunk["section"],
-                topics=chunk["topics"],
-            )
-        )
+    Returns:
+        List of embedding vectors (one per chunk), as Python lists.
+    """
+    embedding_texts = [
+        build_embedding_text(chunk["topics"])
+        for chunk in chunks
+    ]
 
     embeddings = model.encode(
         embedding_texts,

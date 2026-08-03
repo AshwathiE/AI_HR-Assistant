@@ -4,7 +4,7 @@ import shutil
 from fastapi import APIRouter, File, HTTPException, Query, UploadFile
 from config import UPLOAD_FOLDER
 from services.document_loader import load_document
-from services.embeddings import generate_embeddings
+from services.embeddings import generate_document_embeddings
 from utils.utils import chunk_text, clean_text
 from services.vector_db import (
     store_document,
@@ -17,7 +17,6 @@ from utils.logger import logger
 from services.vocabulary import update_vocabulary
 from cache import query_cache
 from utils.utils import (
-    extract_section,
     extract_topics,
 )
 
@@ -120,21 +119,14 @@ async def upload_document(
                 status_code=400,
                 detail="Unable to split the document into chunks."
             )
-
-        # Generate embeddings
-        from services.embeddings import generate_document_embeddings
-
         processed_chunks = []
 
         for i, chunk in enumerate(chunks):
-
-            section = extract_section(chunk)
             topics = extract_topics(chunk)
 
             processed_chunks.append({
-                "text": chunk,
-                "section": section,
-                "topics": topics,
+                "text": chunk,          # original chunk text — stored in Qdrant, used by LLM
+                "topics": topics,       # topics — used ONLY for embedding generation
                 "chunk_number": i + 1,
             })
 

@@ -691,7 +691,7 @@ def deduplicate_chunks(results, similarity_threshold=0.60):
     for result in id_deduped:
 
         chunk_text_normalized = (
-            result["text"].strip().lower()
+            result.get("text", "").strip().lower()
         )
 
         is_duplicate = False
@@ -699,7 +699,7 @@ def deduplicate_chunks(results, similarity_threshold=0.60):
         for existing in unique:
 
             existing_text = (
-                existing["text"].strip().lower()
+                existing.get("text", "").strip().lower()
             )
 
             # Quick length check: skip comparison if
@@ -813,7 +813,7 @@ def reciprocal_rank_fusion(vector_results, bm25_results, k=60):
     ##Score vector search results by rank
     for rank, result in enumerate(vector_results):
 
-        key = result.get("id") or result["text"][:100]
+        key = result.get("id") or result.get("text", "")[:100]
 
         scores[key] = scores.get(key, 0) + (
             1.0 / (k + rank + 1)
@@ -824,7 +824,7 @@ def reciprocal_rank_fusion(vector_results, bm25_results, k=60):
     ##Score BM25 results by rank
     for rank, result in enumerate(bm25_results):
 
-        key = result.get("id") or result["text"][:100]
+        key = result.get("id") or result.get("text", "")[:100]
 
         scores[key] = scores.get(key, 0) + (
             1.0 / (k + rank + 1)
@@ -1013,73 +1013,9 @@ def preprocess_query(query: str):
 
     return cleaned_query, keywords
 
-import re
-
-def build_embedding_text(
-    chunk_text: str,
-    document_name: str,
-    chunk_number: int,
-    section_title: str = None,
-):
-    """
-    Create enriched text for embedding only.
-    The original chunk is NOT modified.
-    """
-
-    # Extract simple keywords
-    words = re.findall(r"\b[a-zA-Z]{4,}\b", chunk_text.lower())
-
-    stop_words = {
-        "this", "that", "with", "have", "from",
-        "they", "their", "should", "would",
-        "about", "there", "which", "where",
-        "employees", "employee"
-    }
-
-    keywords = []
-
-    for word in words:
-        if word not in stop_words and word not in keywords:
-            keywords.append(word)
-
-        if len(keywords) == 10:
-            break
-
-    enriched_text = f"""
-Document:
-{document_name}
-
-Section:
-{section_title if section_title else "General"}
-
-Chunk:
-{chunk_number}
-
-Keywords:
-{", ".join(keywords)}
-
-Content:
-{chunk_text}
-"""
-
-    return enriched_text
-
 import spacy
 
 nlp = spacy.load("en_core_web_sm")
-
-
-def extract_section(chunk: str):
-    """
-    Extract the first heading from the chunk.
-    """
-
-    lines = [line.strip() for line in chunk.split("\n") if line.strip()]
-
-    if lines:
-        return lines[0]
-
-    return ""
 
 
 def extract_topics(chunk: str):

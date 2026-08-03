@@ -72,6 +72,7 @@ def _make_client(collection_names=None, query_points_result=None):
                 0.92,
                 {
                     "text": "Sick leave is 12 days.",
+                    "topics": ["sick leave", "12 days"],
                     "source": "LeavePolicy.pdf",
                     "chunk_number": 1,
                     "collection_name": collection_names[0],
@@ -183,13 +184,13 @@ class TestSearchDocuments:
         assert isinstance(results, list)
 
     def test_result_has_required_keys(self):
-        """Each result dict contains id, score, text, document, chunk_number."""
+        """Each result dict contains id, score, text, topics, document, chunk_number."""
         mock_client = _make_client()
         with patch("services.vector_db.client", mock_client):
             from services. vector_db import search_documents
             results = search_documents([0.0] * 384)
         if results:
-            required = {"id", "score", "text", "document", "chunk_number"}
+            required = {"id", "score", "text", "topics", "document", "chunk_number"}
             assert required.issubset(results[0].keys())
 
     def test_empty_collections_returns_empty_list(self):
@@ -210,12 +211,14 @@ class TestSearchDocuments:
             query_points_result=[
                 _FakePoint("u1", 0.9, {
                     "text": "Sick leave 12 days",
+                    "topics": ["sick leave", "12 days"],
                     "source": "LeavePolicy.pdf",
                     "chunk_number": 1,
                     "collection_name": "company_policy_leave_abc12345",
                 }),
                 _FakePoint("u2", 0.8, {
                     "text": "Benefits info",
+                    "topics": ["benefits", "info"],
                     "source": "Benefits.pdf",
                     "chunk_number": 1,
                     "collection_name": "company_policy_leave_abc12345",
@@ -236,8 +239,8 @@ class TestSearchDocuments:
         mock_client = _make_client(
             collection_names=["company_policy_leave_abc12345"],
             query_points_result=[
-                _FakePoint("u1", 0.7, {"text": "Low score", "source": "A.pdf", "chunk_number": 1, "collection_name": "company_policy_leave_abc12345"}),
-                _FakePoint("u2", 0.95, {"text": "High score", "source": "B.pdf", "chunk_number": 1, "collection_name": "company_policy_leave_abc12345"}),
+                _FakePoint("u1", 0.7, {"text": "Low score text", "topics": ["low score"], "source": "A.pdf", "chunk_number": 1, "collection_name": "company_policy_leave_abc12345"}),
+                _FakePoint("u2", 0.95, {"text": "High score text", "topics": ["high score"], "source": "B.pdf", "chunk_number": 1, "collection_name": "company_policy_leave_abc12345"}),
             ]
         )
         with patch("services.vector_db.client", mock_client):
@@ -251,9 +254,9 @@ class TestSearchDocuments:
         mock_client = _make_client(
             collection_names=["company_policy_leave_abc12345"],
             query_points_result=[
-                _FakePoint("u1", 0.9, {"text": "First", "source": "A.pdf", "chunk_number": 1, "collection_name": "company_policy_leave_abc12345"}),
-                _FakePoint("u2", 0.85, {"text": "Second", "source": "B.pdf", "chunk_number": 2, "collection_name": "company_policy_leave_abc12345"}),
-                _FakePoint("u3", 0.80, {"text": "Third", "source": "C.pdf", "chunk_number": 3, "collection_name": "company_policy_leave_abc12345"}),
+                _FakePoint("u1", 0.9, {"text": "First chunk", "topics": ["first"], "source": "A.pdf", "chunk_number": 1, "collection_name": "company_policy_leave_abc12345"}),
+                _FakePoint("u2", 0.85, {"text": "Second chunk", "topics": ["second"], "source": "B.pdf", "chunk_number": 2, "collection_name": "company_policy_leave_abc12345"}),
+                _FakePoint("u3", 0.80, {"text": "Third chunk", "topics": ["third"], "source": "C.pdf", "chunk_number": 3, "collection_name": "company_policy_leave_abc12345"}),
             ]
         )
         with patch("services.vector_db.client", mock_client):
@@ -269,8 +272,8 @@ class TestSearchDocuments:
         mock_client = _make_client(
             collection_names=["company_policy_leave_abc12345"],
             query_points_result=[
-                _FakePoint("u1", 0.9, {"text": "Policy text", "source": "A.pdf", "chunk_number": 1, "collection_name": "company_policy_leave_abc12345"}),
-                _FakePoint("u2", 0.88, {"text": "Policy text", "source": "A.pdf", "chunk_number": 1, "collection_name": "company_policy_leave_abc12345"}),
+                _FakePoint("u1", 0.9, {"text": "Policy text here", "topics": ["policy text"], "source": "A.pdf", "chunk_number": 1, "collection_name": "company_policy_leave_abc12345"}),
+                _FakePoint("u2", 0.88, {"text": "Policy text here", "topics": ["policy text"], "source": "A.pdf", "chunk_number": 1, "collection_name": "company_policy_leave_abc12345"}),
             ]
         )
         with patch("services.vector_db.client", mock_client):

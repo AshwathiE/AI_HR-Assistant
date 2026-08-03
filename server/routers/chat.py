@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from utils.utils import deduplicate_chunks
 from utils.logger import logger
 from services.preprocessor import preprocess_query
-from services.embeddings import generate_embedding
+from services.embeddings import generate_embeddings
 from services.vector_db import search_documents
 from services.llm import generate_answer
 from cache import query_cache
@@ -67,7 +67,7 @@ def chat(request: ChatRequest):
             metadata=meta,
         )
 
-    query_embedding = generate_embedding(search_text)
+    query_embedding = generate_embeddings(search_text)
 
     top_k = max(1, min(request.top_k or 3, 20))
 
@@ -82,7 +82,6 @@ def chat(request: ChatRequest):
     fallback_used = False
 
     vector_results = search_documents(
-        query=question,
         query_embedding=query_embedding,
         top_k=20,
         selected_sources=selected_sources,
@@ -109,7 +108,7 @@ def chat(request: ChatRequest):
     for result in results:
         context += (
             f"[Source: {result['document']}, Chunk {result['chunk_number']}]\n"
-            f"{result['text']}\n\n"
+            f"{result.get('text', '')}\n\n"
         )
 
     logger.info(f"Results after filtering: {len(results)}")
@@ -130,7 +129,7 @@ def chat(request: ChatRequest):
         Chunk No : {result['chunk_number']}
         Score    : {result['score']:.4f}
 
-    {result['text']}
+    {result.get('text', '')}
 --------------------------------------------------------
  """
     )
@@ -157,7 +156,8 @@ def chat(request: ChatRequest):
             "document": result["document"],
             "chunk_number": result["chunk_number"],
             "score": round(result.get("score", 0), 4),
-            "text": result["text"],
+            "topics": result.get("topics", []),
+            "text": result.get("text", "")
         })
 
     total_response_time = round(time.time() - start_time, 3)
