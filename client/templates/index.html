@@ -68,53 +68,65 @@
                         </h2>
                     </div>
 
-                    <ul id="documentList" class="doc-list">
+                    <<ul id="documentList" class="doc-list">
+
+                        <li class="doc-item selected-document" onclick="selectDocument(this, '')">
+
+                            <span class="doc-icon">📚</span>
+
+                            <span class="doc-name">
+                                All Documents
+                            </span>
+
+                        </li>
+
                         {% if documents %}
                         {% for doc in documents %}
-                        {% set ext = doc.split('.')[-1].upper() %}
-                        <li class="doc-item">
-                            <span class="doc-icon">{% if ext == 'PDF' %}📕{% else %}📘{% endif %}</span>
-                            <span class="doc-name">{{ doc }}</span>
-                            <span class="doc-badge">{{ ext }}</span>
-                        </li>
-                        {% endfor %}
-                        {% else %}
-                        <li class="empty-item">📭 No documents uploaded yet.</li>
-                        {% endif %}
-                    </ul>
 
-                    <button class="btn btn-secondary" onclick="refreshDocuments()" style="margin-top:12px;">
-                        🔄 Refresh
-                    </button>
+                        {% set ext = doc.split('.')[-1].upper() %}
+
+                        <li class="doc-item" onclick="selectDocument(this,'{{ doc }}')">
+
+                            <span class="doc-icon">
+                                {% if ext == 'PDF' %}📕{% else %}📘{% endif %}
+                            </span>
+
+                            <span class="doc-name">
+                                {{ doc }}
+                            </span>
+
+                            <span class="doc-badge">
+                                {{ ext }}
+                            </span>
+
+                            <button class="btn-delete" onclick="deleteDocument('{{ doc }}'); event.stopPropagation();">
+                                🗑 Delete
+                            </button>
+
+                        </li>
+
+                        {% endfor %}
+                        {% endif %}
+
+                        </ul>
+
+
+                        <!-- ADD THIS -->
+                        <input type="hidden" id="selectedDocument" value="">
+
+
+                        <button class="btn btn-secondary" onclick="refreshDocuments()" style="margin-top:12px;">
+                            🔄 Refresh
+                        </button>
                 </div>
 
             </div>
-
-
-
             <!-- Right column — Ask a Question -->
             <div class="column-right">
                 <div class="card chat-card">
                     <div class="card-header">
                         <span class="card-icon">💬</span>
                         <h2>Ask a Question</h2>
-                    </div>
-
-                    <div class="topk-container">
-                        <label for="topK">Top-K Retrieval</label>
-
-                        <select id="topK" class="topk-select">
-                            <option value="1">1 Chunk</option>
-                            <option value="2">2 Chunks</option>
-                            <option value="3" selected>3 Chunks</option>
-                            <option value="4">4 Chunks</option>
-                            <option value="5">5 Chunks</option>
-                            <option value="6">6 Chunks</option>
-                            <option value="7">7 Chunks</option>
-                            <option value="8">8 Chunks</option>
-                            <option value="9">9 Chunks</option>
-                            <option value="10">10 Chunks</option>
-                        </select>
                     </div>
 
                     <textarea id="question" class="question-input"
@@ -124,33 +136,57 @@
                         <span>🔍</span> Ask AI
                     </button>
 
+                    <div id="responseTime" class="response-time">
+                        ⏱️ Response Time: --
+                    </div>
+
+
+                    <div class="topk-container">
+                        <label for="topK">Relevant Documents</label>
+
+                        <select id="topK" class="topk-select">
+                            <option value="1">1 matching sections</option>
+                            <option value="2">2 matching sections</option>
+                            <option value="3" selected>3 matching sections</option>
+                            <option value="4">4 matching sections</option>
+                            <option value="5">5 matching sections</option>
+                            <option value="6">6 matching sections</option>
+                            <option value="7">7 matching sections</option>
+                            <option value="8">8 matching sections</option>
+                            <option value="9">9 matching sections</option>
+                            <option value="10">10 matching sections</option>
+                        </select>
+                    </div>
                     <div id="answer" class="answer-area"></div>
                 </div>
             </div>
-
         </div>
-
     </div>
 
-    <script src="/static/script.js"></script>
 
-    <script>
-        // Show selected filename in the drop zone
-        document.getElementById("pdfFile").addEventListener("change", function () {
-            const nameEl = document.getElementById("selectedFileName");
-            if (this.files.length > 0) {
-                nameEl.textContent = "Selected: " + this.files[0].name;
-                nameEl.style.display = "block";
-            } else {
-                nameEl.style.display = "none";
-            }
-        });
+</body>
+<!-- Global toast container — JS will append toast elements here -->
+<div id="toastContainer"></div>
 
-        // Reload page to refresh document list (server-side rendered)
-        function refreshDocuments() {
-            window.location.reload();
+<script src="/static/script.js"></script>
+
+<script>
+    // Show selected filename in the drop zone
+    document.getElementById("pdfFile").addEventListener("change", function () {
+        const nameEl = document.getElementById("selectedFileName");
+        if (this.files.length > 0) {
+            nameEl.textContent = "Selected: " + this.files[0].name;
+            nameEl.style.display = "block";
+        } else {
+            nameEl.style.display = "none";
         }
-    </script>
+    });
+
+    // Reload page to refresh document list (server-side rendered)
+    function refreshDocuments() {
+        window.location.reload();
+    }
+</script>
 
 </body>
 

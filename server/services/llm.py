@@ -127,38 +127,3 @@ User Question:
             "follow_up_question": None,
             "sources": [],
         }
-
-
-##def rewrite_query(question: str) -> str:
-  ##  prompt = f"""
-##Rewrite the following HR search query.
-##1. Correct spelling.
-##2. Expand abbreviations (SL=sick leave, CL=casual leave, EL=earned leave, PL=paid leave, WFH=work from home, HR=human resources).
-##3. Add useful HR policy synonyms.
-##Return only the rewritten query.
-
-##User Question:
-##{question}
-##"""
-
-##    if gemini_model:
-    ##    try:
-    ##        response = gemini_model.generate_content(prompt)
-    ##        text = getattr(response, "text", "").strip()
-    ##        if text:
-    ##            return text.replace('"', "").replace("'", "").strip()
-    ##    except Exception:
-    ##        logger.warning("Gemini rewrite failed. Using Groq.")
-
-    ##if groq_client:
-        ##try:
-            ##response = groq_client.chat.completions.create(
-            ##    model="meta-llama/llama-4-scout-17b-16e-instruct",
-            ##    messages=[{"role": "user", "content": prompt}],
-            ##    temperature=0,
-            ##)
-           ## return response.choices[0].message.content.strip().replace('"', "").replace("'", "")
-        ##except Exception as e:
-          ##  logger.error(f"Groq rewrite failed: {e}")
-
-    ##return question

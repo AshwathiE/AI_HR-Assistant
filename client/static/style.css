@@ -198,7 +198,7 @@ body {
 
 .btn-primary {
     background: linear-gradient(135deg, #6366f1, #8b5cf6);
-    color: white;
+    color: rgb(59, 48, 48);
     box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
 }
 
@@ -244,6 +244,10 @@ body {
 
 .status-loading {
     color: #fbbf24;
+}
+
+.status-warning {
+    color: #fb923c;
 }
 
 /* =========================================
@@ -314,7 +318,7 @@ body {
 
 .doc-name {
     flex: 1;
-    color: #e2e8f0;
+    color: #48525f;
     word-break: break-all;
     font-weight: 500;
 }
@@ -346,6 +350,265 @@ body {
 
 .error-item {
     color: #f87171;
+}
+
+/* ── Delete button (inline, compact, icon-only) ──────────────────────── */
+.btn-delete {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    border-radius: 7px;
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+    font-size: 0.82rem;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.18s ease, border-color 0.18s ease,
+        color 0.18s ease, transform 0.15s ease;
+    line-height: 1;
+}
+
+.btn-delete:hover:not(:disabled) {
+    background: rgba(239, 68, 68, 0.22);
+    border-color: rgba(248, 113, 113, 0.7);
+    color: #fca5a5;
+    transform: scale(1.1);
+}
+
+.btn-delete:active:not(:disabled) {
+    transform: scale(0.96);
+}
+
+.btn-delete:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Spin animation for the loading state inside the delete button */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.btn-delete.loading {
+    pointer-events: none;
+    animation: spin 0.7s linear infinite;
+}
+
+/* ── Confirmation Modal ──────────────────────────────────────────────── */
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.18s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.modal {
+    background: rgba(22, 24, 36, 0.97);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 18px;
+    padding: 32px 28px 24px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(99, 102, 241, 0.1);
+    animation: modalPop 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalPop {
+    from {
+        opacity: 0;
+        transform: scale(0.92) translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modal-icon {
+    font-size: 2.4rem;
+    text-align: center;
+    margin-bottom: 14px;
+}
+
+.modal-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #9bb1c8;
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.modal-body {
+    font-size: 0.88rem;
+    color: #94a3b8;
+    text-align: center;
+    line-height: 1.65;
+    margin-bottom: 6px;
+}
+
+.modal-filename {
+    font-size: 0.82rem;
+    color: #f87171;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(248, 113, 113, 0.2);
+    border-radius: 7px;
+    padding: 6px 12px;
+    text-align: center;
+    word-break: break-all;
+    margin-bottom: 22px;
+    font-weight: 500;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-modal-cancel {
+    flex: 1;
+    padding: 10px;
+    border-radius: 9px;
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    background: rgba(99, 102, 241, 0.1);
+    color: #a5b4fc;
+    font-family: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.btn-modal-cancel:hover {
+    background: rgba(99, 102, 241, 0.2);
+    border-color: rgba(99, 102, 241, 0.55);
+}
+
+.btn-modal-confirm {
+    flex: 1;
+    padding: 10px;
+    border-radius: 9px;
+    border: none;
+    background: linear-gradient(135deg, #dc2626, #ef4444);
+    color: rgb(224, 167, 167);
+    font-family: inherit;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(220, 38, 38, 0.4);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-modal-confirm:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(220, 38, 38, 0.55);
+}
+
+.btn-modal-confirm:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ── Toast Notification ──────────────────────────────────────────────── */
+#toastContainer {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.toast {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    min-width: 260px;
+    max-width: 360px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    font-size: 0.86rem;
+    line-height: 1.5;
+    pointer-events: all;
+    animation: toastIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.toast.removing {
+    animation: toastOut 0.25s ease forwards;
+}
+
+@keyframes toastIn {
+    from {
+        opacity: 0;
+        transform: translateX(60px) scale(0.92);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+@keyframes toastOut {
+    from {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateX(60px) scale(0.92);
+    }
+}
+
+.toast-success {
+    background: rgba(16, 36, 26, 0.92);
+    border-color: rgba(52, 211, 153, 0.35);
+    color: #34d399;
+}
+
+.toast-error {
+    background: rgba(36, 16, 16, 0.92);
+    border-color: rgba(248, 113, 113, 0.35);
+    color: #f87171;
+}
+
+.toast-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.toast-text {
+    flex: 1;
 }
 
 /* =========================================
@@ -586,4 +849,50 @@ body {
     text-align: center;
     color: #475569;
     font-size: 0.92rem;
+}
+
+/* Response Time & Cache Badges */
+.badge-time {
+    display: inline-block;
+    background: rgba(52, 211, 153, 0.18);
+    color: #34d399;
+    border: 1px solid rgba(52, 211, 153, 0.3);
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+}
+
+.badge-cached {
+    display: inline-block;
+    background: rgba(251, 191, 36, 0.18);
+    color: #fbbf24;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.76rem;
+    margin-left: 6px;
+}
+
+.selected-document {
+
+    border: 2px solid #2563eb;
+
+    background: #24364e;
+
+}
+
+.doc-item {
+
+    cursor: pointer;
+
+    transition: .2s;
+
+}
+
+.doc-item:hover {
+
+    background: #24364e;
+
 }

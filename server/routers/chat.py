@@ -1,4 +1,4 @@
-# chat.py — RAG pipeline with hybrid search, deduplication, and reranking
+# chat.py — RAG pipeline with hybrid search, deduplication.
 import re
 import time
 from typing import List, Optional
@@ -142,9 +142,6 @@ def chat(request: ChatRequest):
         "answer",
         "I couldn't find this information in the uploaded files.",
     )
-
-    # Create payload for memory collection
-
     source_document = None
     if results:
         source_document = results[0]["document"]

@@ -1,0 +1,10 @@
+Metric,Value
+Recall@1,0.9307
+Recall@3,0.9802
+Recall@5,0.9901
+Precision@1,0.9307
+Precision@3,0.8581
+Precision@5,0.8257
+Hit Rate,0.9901
+MRR,0.953
+NDCG,0.9773

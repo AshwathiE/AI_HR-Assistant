@@ -46,8 +46,6 @@ def build_embedding_text(topics: list) -> str: ## to genrate embeddings only fro
 
 def generate_document_embeddings(chunks: list, document_name: str) -> list:
     """
-    Generate embeddings for every chunk in the list.
-
     Embeddings are generated ONLY from chunk["topics"].
     The original chunk text is never used here.
 

@@ -1,0 +1,6 @@
+Phase,Average,Minimum,Maximum,Median
+preprocessing,0.0084,0.0031,0.0209,0.0086
+embedding,0.0418,0.0124,0.1466,0.0424
+vector_retrieval,2.672,2.4322,4.8309,2.558
+llm,0.2965,0.1603,1.6385,0.1889
+total_response,3.0187,2.6576,5.3803,2.8074

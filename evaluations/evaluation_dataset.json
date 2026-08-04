@@ -1,0 +1,507 @@
+[
+  {
+    "question": "How many days of sick leave are employees entitled to per year?",
+    "ground_truth": "Employees are entitled to 12 days of paid sick leave per calendar year.",
+    "expected_document": "LeavePolicy(1).pdf"
+  },
+  {
+    "question": "What is the procedure for requesting casual leave?",
+    "ground_truth": "Casual leave must be requested at least 24 hours in advance through the HR portal and approved by the line manager.",
+    "expected_document": "LeavePolicy(1).pdf"
+  },
+  {
+    "question": "Are unused sick leaves encashable at the end of the year?",
+    "ground_truth": "Unused sick leaves cannot be encashed and lapse at the end of the calendar year.",
+    "expected_document": "LeavePolicy(1).pdf"
+  },
+  {
+    "question": "What is the maximum number of consecutive casual leave days allowed?",
+    "ground_truth": "Employees can take a maximum of 3 consecutive days of casual leave without special approval.",
+    "expected_document": "LeavePolicy(1).pdf"
+  },
+  {
+    "question": "How many days of earned leave do employees accrue per month?",
+    "ground_truth": "Employees accrue 1.5 days of earned leave per month of completed service.",
+    "expected_document": "LeavePolicy(1).pdf"
+  },
+  {
+    "question": "What is the maternity leave duration for female employees?",
+    "ground_truth": "Female employees are eligible for 26 weeks of paid maternity leave for up to two surviving children.",
+    "expected_document": "LeavePolicy(1).pdf"
+  },
+  {
+    "question": "Is paternity leave offered by the company, and for how long?",
+    "ground_truth": "Male employees are entitled to 5 days of paid paternity leave upon the birth or adoption of a child.",
+    "expected_document": "LeavePolicy(1).pdf"
+  },
+  {
+    "question": "What happens to earned leave if an employee resigns?",
+    "ground_truth": "Accumulated earned leave up to 30 days will be encashed during the final settlement upon resignation.",
+    "expected_document": "LeavePolicy(1).pdf"
+  },
+  {
+    "question": "Can sick leave be combined with casual leave?",
+    "ground_truth": "Sick leave cannot be combined with casual leave unless authorized by HR under medical emergencies.",
+    "expected_document": "LeavePolicy(1).pdf"
+  },
+  {
+    "question": "Is a medical certificate required for sick leave exceeding two days?",
+    "ground_truth": "Yes, a valid doctor's medical certificate is required for any sick leave exceeding 2 consecutive days.",
+    "expected_document": "LeavePolicy(1).pdf"
+  },
+  {
+    "question": "What is the policy for bereavement leave?",
+    "ground_truth": "Employees are eligible for up to 5 days of paid bereavement leave in the event of the loss of an immediate family member.",
+    "expected_document": "LeavePolicy(1).pdf"
+  },
+  {
+    "question": "How many days of work from home are allowed per week?",
+    "ground_truth": "Employees are allowed up to 2 days of work from home per week subject to manager approval.",
+    "expected_document": "WorkFromHomePolicy.pdf"
+  },
+  {
+    "question": "What are the core core working hours during work from home?",
+    "ground_truth": "Core working hours during WFH are 10:00 AM to 5:00 PM local time.",
+    "expected_document": "WorkFromHomePolicy.pdf"
+  },
+  {
+    "question": "Who must approve a work from home request?",
+    "ground_truth": "Work from home requests must be approved by the employee's direct reporting manager.",
+    "expected_document": "WorkFromHomePolicy.pdf"
+  },
+  {
+    "question": "Are employees eligible for internet reimbursement during remote work?",
+    "ground_truth": "Employees working remotely full-time or on approved long-term WFH are eligible for a monthly internet allowance.",
+    "expected_document": "WorkFromHomePolicy.pdf"
+  },
+  {
+    "question": "What hardware requirements are necessary for working from home?",
+    "ground_truth": "Employees must use company-issued laptops connected via the secure VPN for all WFH duties.",
+    "expected_document": "WorkFromHomePolicy.pdf"
+  },
+  {
+    "question": "Can an employee work from an international location during WFH?",
+    "ground_truth": "Working from an international location requires advance approval from HR, IT security, and compliance.",
+    "expected_document": "WorkFromHomePolicy.pdf"
+  },
+  {
+    "question": "What is the expectation for employee availability during WFH hours?",
+    "ground_truth": "Employees must remain available via Slack, Microsoft Teams, and email during business hours.",
+    "expected_document": "WorkFromHomePolicy.pdf"
+  },
+  {
+    "question": "How far in advance must WFH requests be submitted?",
+    "ground_truth": "WFH requests should be submitted at least 24 hours prior to the requested remote workday.",
+    "expected_document": "WorkFromHomePolicy.pdf"
+  },
+  {
+    "question": "What happens if an employee experiences a power outage during WFH?",
+    "ground_truth": "If power or internet outage exceeds 2 hours, the employee must inform their manager and report to the office if feasible.",
+    "expected_document": "WorkFromHomePolicy.pdf"
+  },
+  {
+    "question": "Can probationers apply for work from home?",
+    "ground_truth": "Probationary employees are generally required to work from office unless explicit exemption is granted by HR.",
+    "expected_document": "WorkFromHomePolicy.pdf"
+  },
+  {
+    "question": "What is the password change policy frequency according to IT security?",
+    "ground_truth": "Employees must update their passwords every 90 days following security guidelines.",
+    "expected_document": "IT security policy.pdf"
+  },
+  {
+    "question": "Are multi-factor authentication (MFA) requirements mandatory?",
+    "ground_truth": "Yes, Multi-Factor Authentication (MFA) is mandatory for accessing company systems and applications.",
+    "expected_document": "IT security policy.pdf"
+  },
+  {
+    "question": "What is the protocol for reporting lost or stolen company devices?",
+    "ground_truth": "Lost or stolen company devices must be reported immediately to the IT Helpdesk and Security Team within 2 hours.",
+    "expected_document": "IT security policy.pdf"
+  },
+  {
+    "question": "Is connecting personal USB drives to company laptops allowed?",
+    "ground_truth": "Connecting unauthorized personal USB drives or storage devices to company hardware is strictly prohibited.",
+    "expected_document": "IT security policy.pdf"
+  },
+  {
+    "question": "What constitutes confidential company data according to IT policy?",
+    "ground_truth": "Confidential data includes customer PII, financial records, proprietary source code, and employee personal files.",
+    "expected_document": "IT security policy.pdf"
+  },
+  {
+    "question": "What is the VPN requirement when connecting to public Wi-Fi?",
+    "ground_truth": "Employees must connect through the official company VPN whenever using public or untrusted Wi-Fi networks.",
+    "expected_document": "IT security policy.pdf"
+  },
+  {
+    "question": "What are the rules regarding software installation on work computers?",
+    "ground_truth": "Employees cannot install unapproved third-party software; all installations must be deployed via IT administrator tools.",
+    "expected_document": "IT security policy.pdf"
+  },
+  {
+    "question": "What is the clean desk policy requirement?",
+    "ground_truth": "Sensitive documents and storage media must be locked away when workstations are unattended.",
+    "expected_document": "IT security policy.pdf"
+  },
+  {
+    "question": "How should phishing emails be reported?",
+    "ground_truth": "Phishing emails should be reported using the 'Report Phish' button in Outlook or forwarded to security@company.com.",
+    "expected_document": "IT security policy.pdf"
+  },
+  {
+    "question": "What is the penalty for sharing system login credentials?",
+    "ground_truth": "Sharing login credentials is a zero-tolerance policy violation subject to immediate disciplinary action up to termination.",
+    "expected_document": "IT security policy.pdf"
+  },
+  {
+    "question": "What expense allowance is provided for domestic business travel daily meals?",
+    "ground_truth": "Employees on domestic business travel receive a daily meal allowance of up to $50.",
+    "expected_document": "TravelPolicy.pdf"
+  },
+  {
+    "question": "Which flight class can employees book for domestic travel?",
+    "ground_truth": "Economy class must be booked for all domestic flights under 6 hours in duration.",
+    "expected_document": "TravelPolicy.pdf"
+  },
+  {
+    "question": "How far in advance must business travel be booked?",
+    "ground_truth": "Travel bookings must be completed at least 14 days prior to departure to secure optimal corporate rates.",
+    "expected_document": "TravelPolicy.pdf"
+  },
+  {
+    "question": "What is the procedure for submitting travel expense claims?",
+    "ground_truth": "Expense claims along with original receipts must be submitted via the finance portal within 7 days of returning.",
+    "expected_document": "TravelPolicy.pdf"
+  },
+  {
+    "question": "Are hotel stays reimbursed during company business trips?",
+    "ground_truth": "Yes, hotel accommodation up to the designated corporate ceiling is fully reimbursed.",
+    "expected_document": "TravelPolicy.pdf"
+  },
+  {
+    "question": "Can personal travel be combined with business travel?",
+    "ground_truth": "Personal travel may be combined with business trips provided additional costs are borne entirely by the employee.",
+    "expected_document": "TravelPolicy.pdf"
+  },
+  {
+    "question": "What is the cab allowance for travel to and from airports?",
+    "ground_truth": "Employees can claim actual rideshare or taxi costs between home, office, and airport with valid receipts.",
+    "expected_document": "TravelPolicy.pdf"
+  },
+  {
+    "question": "What is the approval matrix for international business travel?",
+    "ground_truth": "International travel requires approval from the Department Head, Vice President, and Finance Director.",
+    "expected_document": "TravelPolicy.pdf"
+  },
+  {
+    "question": "Are travel advances provided for business trips?",
+    "ground_truth": "Employees can request a travel cash advance for official trips lasting longer than 3 days.",
+    "expected_document": "TravelPolicy.pdf"
+  },
+  {
+    "question": "What health insurance coverage is provided to full-time employees?",
+    "ground_truth": "Full-time employees receive comprehensive group health insurance coverage including inpatient and outpatient benefits.",
+    "expected_document": "EmployeeBenefits.pdf"
+  },
+  {
+    "question": "Are dependents covered under the company health insurance plan?",
+    "ground_truth": "Yes, legal spouse and up to two dependent children are covered under the company group health insurance policy.",
+    "expected_document": "EmployeeBenefits.pdf"
+  },
+  {
+    "question": "What is the gym and wellness reimbursement amount per year?",
+    "ground_truth": "Employees are eligible for a annual wellness reimbursement of up to $300 for gym memberships or fitness classes.",
+    "expected_document": "EmployeeBenefits.pdf"
+  },
+  {
+    "question": "Does the company offer a retirement contribution matching scheme?",
+    "ground_truth": "The company matches employee 401(k) or Provident Fund contributions up to 5% of monthly base salary.",
+    "expected_document": "EmployeeBenefits.pdf"
+  },
+  {
+    "question": "What tuition assistance or learning stipend is available?",
+    "ground_truth": "Employees can claim up to $1,000 per year for job-related certifications, courses, and educational workshops.",
+    "expected_document": "EmployeeBenefits.pdf"
+  },
+  {
+    "question": "Is life insurance provided by the employer?",
+    "ground_truth": "Group life insurance coverage equal to 2x annual base salary is provided to all permanent staff.",
+    "expected_document": "EmployeeBenefits.pdf"
+  },
+  {
+    "question": "What mental health support resources are available to staff?",
+    "ground_truth": "Employees have access to 6 free confidential counseling sessions per year via the Employee Assistance Program (EAP).",
+    "expected_document": "EmployeeBenefits.pdf"
+  },
+  {
+    "question": "What is the annual performance bonus evaluation period?",
+    "ground_truth": "Performance bonuses are evaluated annually based on company performance and individual KPI achievements.",
+    "expected_document": "EmployeeBenefits.pdf"
+  },
+  {
+    "question": "What is the formal dress code policy for business meetings?",
+    "ground_truth": "Business formal attire (suit, blazer, formal shoes) is required for external client and investor meetings.",
+    "expected_document": "Dress_Code_Policy.pdf"
+  },
+  {
+    "question": "Is smart casual attire permitted on regular workdays?",
+    "ground_truth": "Yes, smart casual attire is allowed Monday through Thursday for internal office work.",
+    "expected_document": "Dress_Code_Policy.pdf"
+  },
+  {
+    "question": "What is the dress code policy for Casual Fridays?",
+    "ground_truth": "On Fridays, casual attire such as clean jeans, polo shirts, and neat sneakers are permitted.",
+    "expected_document": "Dress_Code_Policy.pdf"
+  },
+  {
+    "question": "Are athletic wear and flip-flops allowed in the office?",
+    "ground_truth": "Athletic wear, beach slippers, flip-flops, and inappropriate slogans are strictly prohibited at all times.",
+    "expected_document": "Dress_Code_Policy.pdf"
+  },
+  {
+    "question": "What is the duration of the probation period for new hires?",
+    "ground_truth": "The standard training and probation period for new employees is 6 months from the date of joining.",
+    "expected_document": "Training_Period_Policy.pdf"
+  },
+  {
+    "question": "Can the training period be extended?",
+    "ground_truth": "Yes, the training period can be extended by up to 3 months based on performance evaluation reviews.",
+    "expected_document": "Training_Period_Policy.pdf"
+  },
+  {
+    "question": "What notice period is required during the training period?",
+    "ground_truth": "Either party may terminate employment during probation with a 15-day notice period or pay in lieu thereof.",
+    "expected_document": "Training_Period_Policy.pdf"
+  },
+  {
+    "question": "What evaluation criteria are used during probation review?",
+    "ground_truth": "Probation reviews assess technical competence, team collaboration, punctuality, and project delivery speed.",
+    "expected_document": "Training_Period_Policy.pdf"
+  },
+  {
+    "question": "What training sessions are mandatory during onboarding?",
+    "ground_truth": "Mandatory onboarding training includes IT Security Awareness, HR Compliance, Code of Conduct, and Safety Training.",
+    "expected_document": "Company Training Period Policy.docx"
+  },
+  {
+    "question": "Is mentorship assigned to new employees during training?",
+    "ground_truth": "Each new hire is assigned a senior team mentor for guidance throughout their training period.",
+    "expected_document": "Company Training Period Policy.docx"
+  },
+  {
+    "question": "How are monthly progress reviews conducted during probation?",
+    "ground_truth": "Managers conduct monthly 1-on-1 performance checkpoints and log progress in the HR portal.",
+    "expected_document": "Company Training Period Policy.docx"
+  },
+  {
+    "question": "What happens upon successful completion of the training period?",
+    "ground_truth": "Upon successful completion, HR issues a formal confirmation letter transitioning the employee to permanent status.",
+    "expected_document": "Company Training Period Policy.docx"
+  },
+  {
+    "question": "Can sick leave be carried forward to the next calendar year?",
+    "ground_truth": "No, sick leave cannot be carried forward and lapses at the end of every calendar year.",
+    "expected_document": "LeavePolicy(1).pdf"
+  },
+  {
+    "question": "What is the maximum earned leave balance an employee can accumulate?",
+    "ground_truth": "Employees can accumulate a maximum of 45 days of earned leave balance.",
+    "expected_document": "LeavePolicy(1).pdf"
+  },
+  {
+    "question": "Are public holidays counted as leave if falling during vacation?",
+    "ground_truth": "Declared public holidays falling within an approved leave period are not deducted from leave balances.",
+    "expected_document": "LeavePolicy(1).pdf"
+  },
+  {
+    "question": "How does sabbatical leave work for long-tenured employees?",
+    "ground_truth": "Employees with over 5 years of continuous service may apply for unpaid sabbatical leave of up to 6 months.",
+    "expected_document": "LeavePolicy(1).pdf"
+  },
+  {
+    "question": "Is leave without pay (LWP) permitted?",
+    "ground_truth": "Leave Without Pay (LWP) requires approval from the Department Head and HR when paid leave balances are exhausted.",
+    "expected_document": "LeavePolicy(1).pdf"
+  },
+  {
+    "question": "What is the policy on half-day casual leave?",
+    "ground_truth": "Casual leave can be taken as a half-day session (morning or afternoon).",
+    "expected_document": "LeavePolicy(1).pdf"
+  },
+  {
+    "question": "Can leave requests be cancelled after manager approval?",
+    "ground_truth": "Employees can cancel approved leave before the start date via the HR system.",
+    "expected_document": "LeavePolicy(1).pdf"
+  },
+  {
+    "question": "Are emergency leaves granted without prior notice?",
+    "ground_truth": "Emergency casual leave must be reported to the manager via phone or message by 10 AM on the day of absence.",
+    "expected_document": "LeavePolicy(1).pdf"
+  },
+  {
+    "question": "What equipment does the IT department provide for WFH?",
+    "ground_truth": "IT provides a laptop, charger, security token, and headset for remote working.",
+    "expected_document": "WorkFromHomePolicy.pdf"
+  },
+  {
+    "question": "Is working from public places like cafes permitted under WFH policy?",
+    "ground_truth": "Working from public cafes or unsecure environments is discouraged unless secure VPN and privacy screens are used.",
+    "expected_document": "WorkFromHomePolicy.pdf"
+  },
+  {
+    "question": "Can a manager revoke WFH privileges for low performance?",
+    "ground_truth": "Managers reserve the right to revoke WFH privileges if employee performance or availability falls below standards.",
+    "expected_document": "WorkFromHomePolicy.pdf"
+  },
+  {
+    "question": "What is the protocol for overtime work during remote working days?",
+    "ground_truth": "Overtime work during WFH requires pre-approval from the reporting manager in writing.",
+    "expected_document": "WorkFromHomePolicy.pdf"
+  },
+  {
+    "question": "How are ergonomic workspace requirements defined for remote staff?",
+    "ground_truth": "Employees must ensure a safe and ergonomic workspace environment at home.",
+    "expected_document": "WorkFromHomePolicy.pdf"
+  },
+  {
+    "question": "Can WFH be combined with official leave?",
+    "ground_truth": "WFH cannot be substituted for sick or casual leave; employees who are unwell should apply for official leave.",
+    "expected_document": "WorkFromHomePolicy.pdf"
+  },
+  {
+    "question": "What are the rules regarding downloading files on personal devices?",
+    "ground_truth": "Downloading or transferring company documents onto personal non-managed devices is prohibited.",
+    "expected_document": "IT security policy.pdf"
+  },
+  {
+    "question": "How should sensitive printed documents be disposed of?",
+    "ground_truth": "Sensitive printed materials must be shredded using office cross-cut shredders.",
+    "expected_document": "IT security policy.pdf"
+  },
+  {
+    "question": "What is the policy on social media posts mentioning company business?",
+    "ground_truth": "Employees must not post confidential information or represent company views without PR authorization.",
+    "expected_document": "IT security policy.pdf"
+  },
+  {
+    "question": "What happens when an employee enters an incorrect password 5 times?",
+    "ground_truth": "The account is temporarily locked for 15 minutes or requires IT admin reset after 5 failed attempts.",
+    "expected_document": "IT security policy.pdf"
+  },
+  {
+    "question": "Are guest Wi-Fi networks available for external office visitors?",
+    "ground_truth": "Yes, visitors can use isolated guest Wi-Fi which has no access to internal corporate networks.",
+    "expected_document": "IT security policy.pdf"
+  },
+  {
+    "question": "Is software patching mandatory on corporate workstations?",
+    "ground_truth": "Workstation security patches and OS updates are automatically pushed and compulsory.",
+    "expected_document": "IT security policy.pdf"
+  },
+  {
+    "question": "What is the per-diem allowance for international business trips?",
+    "ground_truth": "International per-diem allowances vary by country tier, ranging between $75 and $120 per day.",
+    "expected_document": "TravelPolicy.pdf"
+  },
+  {
+    "question": "Who pays for passport and visa renewal for business travel?",
+    "ground_truth": "Visa fees and official passport renewal charges for business travel are fully covered by the company.",
+    "expected_document": "TravelPolicy.pdf"
+  },
+  {
+    "question": "What insurance protection is provided during international travel?",
+    "ground_truth": "Employees receive comprehensive travel medical and emergency assistance insurance for abroad trips.",
+    "expected_document": "TravelPolicy.pdf"
+  },
+  {
+    "question": "What is the maximum daily taxi fare limit for local business travel?",
+    "ground_truth": "Local travel reimbursement covers actual metered cab fares or app-based rides up to $40 daily.",
+    "expected_document": "TravelPolicy.pdf"
+  },
+  {
+    "question": "Can rental cars be booked for domestic business trips?",
+    "ground_truth": "Rental car booking requires prior approval from the Travel Desk and line manager.",
+    "expected_document": "TravelPolicy.pdf"
+  },
+  {
+    "question": "What is the optical or dental care benefit limit?",
+    "ground_truth": "Dental and vision care benefits cover up to $250 annually under the supplemental benefits plan.",
+    "expected_document": "EmployeeBenefits.pdf"
+  },
+  {
+    "question": "Is parental leave available for adopting a child?",
+    "ground_truth": "Adopting parents receive up to 12 weeks of paid adoption leave.",
+    "expected_document": "EmployeeBenefits.pdf"
+  },
+  {
+    "question": "What employee referral bonuses are awarded for technical roles?",
+    "ground_truth": "Successful candidate referrals for senior tech roles yield a referral bonus of $1,500 after 90 days of joining.",
+    "expected_document": "EmployeeBenefits.pdf"
+  },
+  {
+    "question": "Are relocation allowances provided for outstation hires?",
+    "ground_truth": "Eligible outstation hires receive a one-time relocation stipend and temporary lodging for 14 days.",
+    "expected_document": "EmployeeBenefits.pdf"
+  },
+  {
+    "question": "Does the company offer flexible working hours?",
+    "ground_truth": "Flexible start times between 8:00 AM and 10:00 AM are allowed provided total daily hours are met.",
+    "expected_document": "EmployeeBenefits.pdf"
+  },
+  {
+    "question": "Are sleeveless tops or shorts permitted in the office?",
+    "ground_truth": "Sleeveless tops, shorts, and flip-flops are not permitted under the workplace dress code policy.",
+    "expected_document": "Dress_Code_Policy.pdf"
+  },
+  {
+    "question": "What is the dress code expectation for client presentations?",
+    "ground_truth": "Client-facing presentations require formal business attire.",
+    "expected_document": "Dress_Code_Policy.pdf"
+  },
+  {
+    "question": "Is footwear specified under the workplace safety dress policy?",
+    "ground_truth": "Closed-toe shoes are required in lab, server room, and technical operations areas.",
+    "expected_document": "Dress_Code_Policy.pdf"
+  },
+  {
+    "question": "How long is the training evaluation phase for technical roles?",
+    "ground_truth": "The technical training evaluation phase spans the first 90 days of employment.",
+    "expected_document": "Training_Period_Policy.pdf"
+  },
+  {
+    "question": "Are probationers entitled to take casual leaves during training?",
+    "ground_truth": "Probationers earn 1 day of casual leave per month during the training period.",
+    "expected_document": "Training_Period_Policy.pdf"
+  },
+  {
+    "question": "What key deliverables are expected during the first 30 days of training?",
+    "ground_truth": "The first 30 days focus on onboarding, policy compliance completion, and initial project shadowing.",
+    "expected_document": "Company Training Period Policy.docx"
+  },
+  {
+    "question": "Who conducts the final confirmation assessment at the end of probation?",
+    "ground_truth": "The final confirmation assessment is conducted by the Department Head alongside HR.",
+    "expected_document": "Company Training Period Policy.docx"
+  },
+  {
+    "question": "What happens if a trainee fails the final probation assessment?",
+    "ground_truth": "If performance remains unsatisfactory after extension, employment may be terminated as per policy terms.",
+    "expected_document": "Company Training Period Policy.docx"
+  },
+  {
+    "question": "How are training feedback sessions scheduled for new joiners?",
+    "ground_truth": "Feedback sessions occur bi-weekly with team mentors and monthly with HR.",
+    "expected_document": "Company Training Period Policy.docx"
+  },
+  {
+    "question": "What is the policy for medical leave during probation?",
+    "ground_truth": "Medical leave during probation is granted upon submission of medical evidence.",
+    "expected_document": "Training_Period_Policy.pdf"
+  },
+  {
+    "question": "Are training materials and course fees fully covered by the organization?",
+    "ground_truth": "All official internal and external training programs mandated by management are fully funded.",
+    "expected_document": "Company Training Period Policy.docx"
+  }
+]
